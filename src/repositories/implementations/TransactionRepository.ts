@@ -1,0 +1,160 @@
+import { inject, injectable } from 'tsyringe';
+import { PrismaClient, Transaction, Account, User, Payer, Prisma } from '@prisma/client';
+import { ITransactionRepository } from '../interfaces/ITransactionRepository';
+import { CreateTransactionDto, UpdateTransactionDto, TransactionQueryDto } from '../../shared/dtos/transaction.dto';
+import { NotFoundError } from '../../shared/middlewares/error.middleware';
+
+@injectable()
+export class TransactionRepository implements ITransactionRepository {
+  constructor(
+    @inject('PrismaClient')
+    private prisma: PrismaClient
+  ) { }
+
+  async create(data: CreateTransactionDto): Promise<Transaction> {
+    return this.prisma.transaction.create({
+      data: {
+        ...data,
+        accountingPeriod: new Date(data.accountingPeriod),
+        amount: new Prisma.Decimal(data.amount),
+        createAt: new Date()
+      }
+    });
+  }
+
+  async findById(id: string): Promise<(Transaction & {
+    account: Account;
+    user: User | null;
+    payer: Payer | null
+  }) | null> {
+    return this.prisma.transaction.findUnique({
+      where: { id },
+      include: {
+        account: {
+          include: { family: true }
+        },
+        user: {
+          include: { family: true }
+        },
+        payer: true
+      }
+    });
+  }
+
+  async findByAccountId(accountId: string): Promise<Transaction[]> {
+    return this.prisma.transaction.findMany({
+      where: { accountId },
+      include: {
+        account: true,
+        user: true,
+        payer: true
+      },
+      orderBy: { createAt: 'desc' }
+    });
+  }
+
+  async findWithFilters(filters: TransactionQueryDto): Promise<{
+    transactions: (Transaction & {
+      account: Account;
+      user: User | null;
+      payer: Payer | null
+    })[];
+    total: number;
+  }> {
+    const where: Prisma.TransactionWhereInput = {};
+
+    if (filters.startDate || filters.endDate) {
+      where.accountingPeriod = {};
+
+      if (filters.startDate) where.accountingPeriod.gte = new Date(filters.startDate);
+      if (filters.endDate) where.accountingPeriod.lte = new Date(filters.endDate);
+    }
+
+    if (filters.accountId) {
+      where.accountId = filters.accountId;
+    }
+
+    if (filters.userId) {
+      where.userId = filters.userId;
+    }
+
+    if (filters.payerId) {
+      where.payerId = filters.payerId;
+    }
+
+    if (filters.status) {
+      where.status = filters.status;
+    }
+
+    const [transactions, total] = await Promise.all([
+      this.prisma.transaction.findMany({
+        where,
+        include: {
+          account: {
+            include: { family: true }
+          },
+          user: {
+            include: { family: true }
+          },
+          payer: true
+        },
+        orderBy: { createAt: 'desc' },
+        take: filters.limit || 50,
+        skip: filters.offset || 0
+      }),
+      this.prisma.transaction.count({ where })
+    ]);
+
+    return { transactions, total };
+  }
+
+  async findAll(): Promise<Transaction[]> {
+    return this.prisma.transaction.findMany({
+      include: {
+        account: true,
+        user: true,
+        payer: true
+      },
+      orderBy: { createAt: 'desc' }
+    });
+  }
+
+  async update(id: string, data: UpdateTransactionDto): Promise<Transaction> {
+    const transaction = await this.prisma.transaction.findUnique({
+      where: { id }
+    });
+
+    if (!transaction) {
+      throw new NotFoundError('Transação não encontrada');
+    }
+
+    const updateData: any = { ...data };
+
+    if (data.accountingPeriod) {
+      updateData.accountingPeriod = new Date(data.accountingPeriod);
+    }
+
+    if (data.amount) {
+      updateData.amount = new Prisma.Decimal(data.amount);
+    }
+
+    return this.prisma.transaction.update({
+      where: { id },
+      data: updateData
+    });
+  }
+
+  async delete(id: string): Promise<void> {
+    const transaction = await this.prisma.transaction.findUnique({
+      where: { id }
+    });
+
+    if (!transaction) {
+      throw new NotFoundError('Transação não encontrada');
+    }
+
+    await this.prisma.transaction.delete({
+      where: { id }
+    });
+  }
+}

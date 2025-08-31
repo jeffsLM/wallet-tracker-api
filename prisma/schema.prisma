@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Family {
+  id       String    @id @default(uuid())
+  name     String
+  createAt DateTime
+  users    User[]
+  accounts Account[]
+}
+
+model User {
+  id           String        @id @default(uuid())
+  family       Family        @relation(fields: [familyId], references: [id])
+  familyId     String
+  name         String
+  phone        String?
+  createAt     DateTime
+  transactions Transaction[]
+}
+
+model Account {
+  id             String           @id @default(uuid())
+  family         Family           @relation(fields: [familyId], references: [id])
+  familyId       String
+  name           String
+  type           String // cartão, cc, poupança, digital
+  last4Digits    String? // apenas para cartão
+  active         Boolean          @default(true)
+  createAt       DateTime
+  updateAt       DateTime?
+  transactions   Transaction[]
+  AccountBalance AccountBalance[]
+}
+
+model AccountBalance {
+  id        String  @id @default(uuid())
+  account   Account @relation(fields: [accountId], references: [id])
+  accountId String
+
+  competence DateTime
+  amount     Decimal
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payer {
+  id           String        @id @default(uuid())
+  name         String
+  createAt     DateTime
+  transactions Transaction[]
+}
+
+model Transaction {
+  id               String   @id @default(uuid())
+  account          Account  @relation(fields: [accountId], references: [id])
+  accountId        String
+  payer            Payer?   @relation(fields: [payerId], references: [id])
+  payerId          String?
+  user             User?    @relation(fields: [userId], references: [id])
+  userId           String?
+  accountingPeriod DateTime
+  operationType    String
+  amount           Decimal
+  installment      Int?
+  finalInstallment Int?
+  ocr              String?
+  description      String?
+  status           String?
+  createAt         DateTime
+}
