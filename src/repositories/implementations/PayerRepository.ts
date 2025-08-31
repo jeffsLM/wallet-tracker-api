@@ -26,6 +26,12 @@ export class PayerRepository implements IPayerRepository {
     });
   }
 
+  async findDefaultPayer(): Promise<Payer | null> {
+    return this.prisma.payer.findFirst({
+      where: { default: true }
+    });
+  }
+
   async findAll(): Promise<Payer[]> {
     return this.prisma.payer.findMany({
       orderBy: { createAt: 'desc' }

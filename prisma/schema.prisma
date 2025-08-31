@@ -54,6 +54,7 @@ model AccountBalance {
 model Payer {
   id           String        @id @default(uuid())
   name         String
+  default      Boolean       @default(false)
   createAt     DateTime
   transactions Transaction[]
 }

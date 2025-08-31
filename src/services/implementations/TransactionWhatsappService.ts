@@ -6,6 +6,7 @@ import { IAccountRepository } from '../../repositories/interfaces/IAccountReposi
 import { IUserRepository } from '../../repositories/interfaces/IUserRepository';
 import { WhatsappPluginTransactionDto } from '../../shared/dtos/transactionWhatsappPlugin.dto';
 import { IFamilyRepository } from '../../repositories/interfaces/IFamilyRepository';
+import { IPayerRepository } from '../../repositories/interfaces/IPayerRepository';
 
 @injectable()
 export class TransactionWhatsappService implements ITransactionWhatsappService {
@@ -17,10 +18,13 @@ export class TransactionWhatsappService implements ITransactionWhatsappService {
     @inject('UserRepository')
     private userRepository: IUserRepository,
     @inject('FamilyRepository')
-    private familyRepository: IFamilyRepository
+    private familyRepository: IFamilyRepository,
+    @inject('PayerRepository')
+    private payerRepository: IPayerRepository
   ) { }
 
   async create(data: WhatsappPluginTransactionDto): Promise<Transaction[]> {
+    const defaultPayer = await this.payerRepository.findDefaultPayer();
 
     let userInfo = await this.userRepository.findByPhoneNumber(data.user || '');
     let userWasCreated = false;
@@ -86,7 +90,8 @@ export class TransactionWhatsappService implements ITransactionWhatsappService {
         finalInstallment: parcelas,
         installment: i + 1,
         ocr: data.ocrText,
-        status: accountWasCreated || userWasCreated ? 'INCONSISTENTE' : data.status
+        status: accountWasCreated || userWasCreated ? 'INCONSISTENTE' : data.status,
+        payerId: defaultPayer ? defaultPayer.id : undefined
       });
     });
 

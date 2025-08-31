@@ -24,6 +24,10 @@ export class PayerService implements IPayerService {
     return payer;
   }
 
+  async findDefaultPayer(): Promise<Payer | null> {
+    return this.payerRepository.findDefaultPayer();
+  }
+
   async findAll(): Promise<Payer[]> {
     return this.payerRepository.findAll();
   }
