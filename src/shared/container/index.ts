@@ -29,11 +29,10 @@ import { IPayerService } from '../../services/interfaces/IPayerService';
 import { PayerService } from '../../services/implementations/PayerService';
 import { ITransactionService } from '../../services/interfaces/ITransactionService';
 import { TransactionService } from '../../services/implementations/TransactionService';
+import { ITransactionWhatsappService } from '../../services/interfaces/ITrasactionWhatsappService';
+import { TransactionWhatsappService } from '../../services/implementations/TransactionWhatsappService';
 
-// Configuração do Prisma Client
 const prisma = new PrismaClient();
-
-// Registrar Prisma Client
 container.registerInstance('PrismaClient', prisma);
 
 // Registrar Repositories
@@ -96,6 +95,11 @@ container.register<IPayerService>(
 container.register<ITransactionService>(
   'TransactionService',
   { useClass: TransactionService }
+);
+
+container.register<ITransactionWhatsappService>(
+  'TransactionWhatsappService',
+  { useClass: TransactionWhatsappService }
 );
 
 export { container, prisma };

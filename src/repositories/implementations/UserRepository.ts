@@ -27,6 +27,13 @@ export class UserRepository implements IUserRepository {
     });
   }
 
+  async findByPhoneNumber(phoneNumber: string): Promise<User | null> {
+    return this.prisma.user.findFirst({
+      where: { phone: phoneNumber },
+      include: { family: true }
+    });
+  }
+
   async findByFamilyId(familyId: string): Promise<User[]> {
     return this.prisma.user.findMany({
       where: { familyId },
