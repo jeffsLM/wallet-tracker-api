@@ -5,7 +5,7 @@ const TypeEnum = z.enum(['REFEICAO', 'ALIMENTACAO', 'CREDITO', 'DEBITO', 'VOUCHE
 });
 
 export const WhatsappPluginTransactionSchema = z.object({
-  id: z.uuid('ID deve ser um UUID válido'),
+  id: z.string().optional(),
   purchaseType: TypeEnum.optional(),
   amount: z.string().optional(),
   parcelas: z.number().min(1).optional(),
