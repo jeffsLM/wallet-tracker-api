@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 
 export const authHandler = (req: Request, res: Response, next: NextFunction) => {
-  const apiKey = req.headers['Authorization'] as string | undefined;
+  const apiKey = req.headers['Authorization'] as string || req.headers['authorization'] as string;
 
   if (!apiKey) {
     return res.status(401).json({
