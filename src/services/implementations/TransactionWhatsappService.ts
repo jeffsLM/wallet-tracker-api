@@ -86,11 +86,11 @@ export class TransactionWhatsappService implements ITransactionWhatsappService {
         accountingPeriod: installmentDate,
         amount: amountPerInstallment,
         operationType: data.purchaseType || 'CREDITO',
-        description: `Integrado via WhatsApp - Parcela ${i + 1} de ${parcelas}`,
+        description: `Integrado via WhatsApp - Parcela ${i + 1} de ${parcelas} | ${data.id}`,
         finalInstallment: parcelas,
         installment: i + 1,
         ocr: data.ocrText,
-        status: accountWasCreated || userWasCreated ? 'INCONSISTENTE' : data.status,
+        status: accountWasCreated || userWasCreated ? 'INCONSISTENT' : data.status,
         payerId: defaultPayer ? defaultPayer.id : undefined
       });
     });
