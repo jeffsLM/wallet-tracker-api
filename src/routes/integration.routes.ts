@@ -1,18 +1,18 @@
 import { Router } from 'express';
-import { IntegrationTrasaction } from '../controllers/IntegrationTrasaction';
+import { IntegrationTransaction } from '../controllers/IntegrationTransaction';
 import { validateBody } from '../shared/middlewares/validation.middleware';
 import {
   WhatsappPluginTransactionSchema,
 } from '../shared/dtos/transactionWhatsappPlugin.dto';
 import { container } from '../shared/container';
 
-const integrationTrasactionRoutes = Router();
-const integrationTrasaction = container.resolve(IntegrationTrasaction);
+const integrationTransactionRoutes = Router();
+const integrationTransaction = container.resolve(IntegrationTransaction);
 
-integrationTrasactionRoutes.post(
+integrationTransactionRoutes.post(
   '/whatsapp-plugin',
   validateBody(WhatsappPluginTransactionSchema),
-  (req, res, next) => integrationTrasaction.handle(req, res).catch(next)
+  (req, res, next) => integrationTransaction.handle(req, res).catch(next)
 );
 
-export { integrationTrasactionRoutes };
+export { integrationTransactionRoutes };
