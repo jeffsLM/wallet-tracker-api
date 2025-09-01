@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { routes } from './routes';
 import { errorHandler } from './shared/middlewares/error.middleware';
+import { authHandler } from './shared/middlewares/token.middleware';
 
 const app = express();
 
@@ -23,7 +24,7 @@ app.use((req, res, next) => {
 });
 
 
-app.use('/api/v1', routes);
+app.use('/api/v1', authHandler, routes);
 
 app.use('*', (req, res) => {
   res.status(404).json({
