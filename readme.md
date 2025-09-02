@@ -1,5 +1,5 @@
 <h1 align="center">Wallet Tracker API</h1>
-<p align="center">Complete Family Financial Control System Built with TypeScript</p>
+<p align="center">Complete Family Financial Control System</p>
 
 <div align="center">
 
