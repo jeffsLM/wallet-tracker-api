@@ -1,4 +1,8 @@
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 import { injectable, inject } from 'tsyringe';
 import { Transaction } from '@prisma/client';
@@ -65,7 +69,7 @@ export class TransactionWhatsappService implements ITransactionWhatsappService {
     const amountPerInstallment = totalAmount / parcelas;
 
     const transactionPromises = Array.from({ length: parcelas }, (_, i) => {
-      let baseDate = dayjs();
+      let baseDate = dayjs().tz('America/Sao_Paulo');
       let installmentDate = baseDate.add(i, 'month');
 
       const isLastDayOfMonth = baseDate.date() === baseDate.endOf('month').date();
