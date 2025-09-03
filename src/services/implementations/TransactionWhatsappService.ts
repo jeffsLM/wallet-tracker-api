@@ -78,8 +78,6 @@ export class TransactionWhatsappService implements ITransactionWhatsappService {
         installmentDate.setDate(Math.min(originalDay, lastDayOfInstallmentMonth));
       }
 
-      installmentDate.setHours(12, 0, 0, 0);
-
       return this.transactionRepository.create({
         accountId: accountInfo.id,
         userId: userInfo.id,
