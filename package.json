@@ -13,6 +13,7 @@
     "@prisma/client": "^5.15.0",
     "@upstash/qstash": "^2.8.2",
     "cors": "^2.8.5",
+    "dayjs": "^1.11.18",
     "express": "^4.19.0",
     "helmet": "^8.1.0",
     "reflect-metadata": "^0.2.2",

@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+
 import { injectable, inject } from 'tsyringe';
 import { Transaction } from '@prisma/client';
 import { ITransactionWhatsappService } from '../interfaces/ITrasactionWhatsappService';
@@ -63,25 +65,24 @@ export class TransactionWhatsappService implements ITransactionWhatsappService {
     const amountPerInstallment = totalAmount / parcelas;
 
     const transactionPromises = Array.from({ length: parcelas }, (_, i) => {
-      let baseDate = new Date(data.timestamp || Date.now());
-      let installmentDate = new Date(baseDate);
-      installmentDate.setMonth(baseDate.getMonth() + i);
+      let baseDate = dayjs();
+      let installmentDate = baseDate.add(i, 'month');
 
-      let isLastDayOfMonth = baseDate.getDate() === new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0).getDate();
+      const isLastDayOfMonth = baseDate.date() === baseDate.endOf('month').date();
 
-      if (isLastDayOfMonth) {
-        installmentDate.setDate(new Date(installmentDate.getFullYear(), installmentDate.getMonth() + 1, 0).getDate());
-      } else {
-        let originalDay = baseDate.getDate();
-        let lastDayOfInstallmentMonth = new Date(installmentDate.getFullYear(), installmentDate.getMonth() + 1, 0).getDate();
+      if (isLastDayOfMonth) installmentDate = installmentDate.endOf('month');
+      if (!isLastDayOfMonth) {
+        const originalDay = baseDate.date();
+        const lastDayOfDestinationMonth = installmentDate.endOf('month').date();
 
-        installmentDate.setDate(Math.min(originalDay, lastDayOfInstallmentMonth));
+        const dayToSet = Math.min(originalDay, lastDayOfDestinationMonth);
+        installmentDate = installmentDate.date(dayToSet);
       }
 
       return this.transactionRepository.create({
         accountId: accountInfo.id,
         userId: userInfo.id,
-        accountingPeriod: installmentDate,
+        accountingPeriod: installmentDate.toDate(), // Converte de volta para Date se necessário
         amount: amountPerInstallment,
         operationType: data.purchaseType || 'CREDITO',
         description: `Integrado via WhatsApp - Parcela ${i + 1} de ${parcelas} | ${data.id}`,
@@ -92,7 +93,6 @@ export class TransactionWhatsappService implements ITransactionWhatsappService {
         payerId: defaultPayer ? defaultPayer.id : undefined
       });
     });
-
     const transactions = (await Promise.allSettled(transactionPromises)).filter((result): result is PromiseFulfilledResult<Transaction> => {
       if (result.status === 'fulfilled') {
         return true;
