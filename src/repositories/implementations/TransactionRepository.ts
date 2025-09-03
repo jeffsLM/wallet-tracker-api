@@ -1,15 +1,9 @@
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
-
 import { inject, injectable } from 'tsyringe';
 import { PrismaClient, Transaction, Account, User, Payer, Prisma } from '@prisma/client';
 import { ITransactionRepository } from '../interfaces/ITransactionRepository';
 import { CreateTransactionDto, UpdateTransactionDto, TransactionQueryDto } from '../../shared/dtos/transaction.dto';
 import { NotFoundError } from '../../shared/middlewares/error.middleware';
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 @injectable()
 export class TransactionRepository implements ITransactionRepository {
@@ -22,9 +16,9 @@ export class TransactionRepository implements ITransactionRepository {
     return this.prisma.transaction.create({
       data: {
         ...data,
-        accountingPeriod: dayjs(data.accountingPeriod).tz('America/Sao_Paulo').format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
+        accountingPeriod: dayjs(data.accountingPeriod).subtract(3, 'hours').toDate(),
         amount: new Prisma.Decimal(data.amount),
-        createAt: dayjs().tz('America/Sao_Paulo').format("YYYY-MM-DDTHH:mm:ss.SSSZ")
+        createAt: dayjs().subtract(3, 'hours').toDate()
       }
     });
   }
