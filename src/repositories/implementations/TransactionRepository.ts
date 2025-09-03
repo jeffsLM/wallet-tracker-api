@@ -22,9 +22,9 @@ export class TransactionRepository implements ITransactionRepository {
     return this.prisma.transaction.create({
       data: {
         ...data,
-        accountingPeriod: dayjs(data.accountingPeriod).tz('America/Sao_Paulo').toDate(),
+        accountingPeriod: dayjs(data.accountingPeriod).tz('America/Sao_Paulo').format("YYYY-MM-DD HH:mm:ss"),
         amount: new Prisma.Decimal(data.amount),
-        createAt: dayjs().tz('America/Sao_Paulo').toDate()
+        createAt: dayjs().tz('America/Sao_Paulo').format("YYYY-MM-DD HH:mm:ss")
       }
     });
   }
