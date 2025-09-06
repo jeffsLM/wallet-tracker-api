@@ -22,7 +22,7 @@ export class IntegrationTransaction {
       const timestamp = parseInt(req.headers['upstash-timestamp'] as string);
       await this.receiver.verify({
         signature,
-        body: typeof req.body === 'string' ? req.body : JSON.stringify(req.body),
+        body: req.body,
       });
 
       const now = Date.now();
@@ -36,7 +36,7 @@ export class IntegrationTransaction {
   async handle(req: Request<{}, {}, WhatsappPluginTransactionDto>, res: Response) {
     try {
       const valid = await this.validateQStash(req);
-      if (!valid) return res.status(400).json({ success: false, error: 'Invalid QStash request' });
+      if (!valid) return res.status(400).json({ success: false, error: 'Invalid QStash request', recivedRequest: req.body });
 
       const transaction = await this.transactionWhatsappService.create(req.body);
 
