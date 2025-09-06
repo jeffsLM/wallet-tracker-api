@@ -21,6 +21,11 @@ export class IntegrationTransaction {
       const signature = req.headers['upstash-signature'] as string;
       const body = (req as any).rawBody || JSON.stringify(req.body);
 
+      console.log('QStash body:', {
+        rawBody: (req as any).rawBody,
+        body
+      });
+
       await this.receiver.verify({
         signature,
         body: body,
