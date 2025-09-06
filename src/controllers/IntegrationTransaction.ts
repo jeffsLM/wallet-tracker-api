@@ -21,7 +21,7 @@ export class IntegrationTransaction {
       const signature = req.headers['upstash-signature'] as string;
       await this.receiver.verify({
         signature,
-        body: JSON.stringify(req.body),
+        body: req.body,
       });
       return true;
     } catch {
