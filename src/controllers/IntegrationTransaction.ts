@@ -19,14 +19,10 @@ export class IntegrationTransaction {
   private async validateQStash(req: Request): Promise<boolean> {
     try {
       const signature = req.headers['upstash-signature'] as string;
-      const timestamp = parseInt(req.headers['upstash-timestamp'] as string);
       await this.receiver.verify({
         signature,
         body: req.body,
       });
-
-      const now = Date.now();
-      if (now - timestamp > 5 * 60 * 1000) return false;
       return true;
     } catch {
       return false;
