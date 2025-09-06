@@ -26,7 +26,15 @@ export class TransactionWhatsappService implements ITransactionWhatsappService {
   ) { }
 
   async create(data: WhatsappPluginTransactionDto): Promise<Transaction[]> {
-    const defaultPayer = await this.payerRepository.findDefaultPayer();
+    const normalizedPayer = data.payer?.normalize("NFD")?.replace(/[\u0300-\u036f]/g, "");
+    let payer = await this.payerRepository.findByName(normalizedPayer || '');
+
+    if (!payer) {
+      payer = await this.payerRepository.create({
+        name: normalizedPayer || '',
+        default: false,
+      });
+    }
 
     let userInfo = await this.userRepository.findByPhoneNumber(data.user || '');
     let userWasCreated = false;
@@ -90,7 +98,7 @@ export class TransactionWhatsappService implements ITransactionWhatsappService {
         installment: i + 1,
         ocr: data.ocrText,
         status: accountWasCreated || userWasCreated ? 'INCONSISTENT' : data.status,
-        payerId: defaultPayer ? defaultPayer.id : undefined
+        payerId: payer.id
       });
     });
     const transactions = (await Promise.allSettled(transactionPromises)).filter((result): result is PromiseFulfilledResult<Transaction> => {

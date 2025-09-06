@@ -13,7 +13,8 @@ export const WhatsappPluginTransactionSchema = z.object({
   user: z.string().optional(),
   ocrText: z.string().optional(),
   timestamp: z.number().optional(),
-  status: z.string().optional()
+  status: z.string().optional(),
+  payer: z.string().optional(),
 });
 
 export type WhatsappPluginTransactionDto = z.infer<typeof WhatsappPluginTransactionSchema>;
