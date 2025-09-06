@@ -19,12 +19,15 @@ export class IntegrationTransaction {
   private async validateQStash(req: Request): Promise<boolean> {
     try {
       const signature = req.headers['upstash-signature'] as string;
+      const body = (req as any).rawBody || JSON.stringify(req.body);
+
       await this.receiver.verify({
         signature,
-        body: req.body,
+        body: body,
       });
       return true;
-    } catch {
+    } catch (error) {
+      console.error('QStash validation error:', error);
       return false;
     }
   }
@@ -32,7 +35,13 @@ export class IntegrationTransaction {
   async handle(req: Request<{}, {}, WhatsappPluginTransactionDto>, res: Response) {
     try {
       const valid = await this.validateQStash(req);
-      if (!valid) return res.status(400).json({ success: false, error: 'Invalid QStash request', recivedRequest: req.body });
+      if (!valid) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid QStash request',
+          receivedRequest: req.body
+        });
+      }
 
       const transaction = await this.transactionWhatsappService.create(req.body);
 
