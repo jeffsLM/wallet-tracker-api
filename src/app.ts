@@ -3,7 +3,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { routes } from './routes';
 import { errorHandler } from './shared/middlewares/error.middleware';
-import { authHandler } from './shared/middlewares/token.middleware';
 
 const app = express();
 
@@ -14,18 +13,13 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use('/webhook/qstash', (req, res, next) => {
-  let data = '';
-  req.on('data', chunk => {
-    data += chunk;
-  });
-  req.on('end', () => {
-    (req as any).rawBody = data;
-    next();
-  });
+app.use((req, res, next) => {
+  if (req.path.includes('integrations')) {
+    return next();
+  }
+  return express.json({ limit: '10mb' })(req, res, next);
 });
 
-app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use((req, res, next) => {
