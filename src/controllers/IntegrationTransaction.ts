@@ -19,12 +19,14 @@ export class IntegrationTransaction {
   private async validateQStash(req: Request): Promise<boolean> {
     try {
       const signature = req.headers['upstash-signature'] as string;
-      const rawBody = (req as any).rawBody;
+      const timestamp = parseInt(req.headers['upstash-timestamp'] as string);
       await this.receiver.verify({
         signature,
-        body: rawBody,
+        body: typeof req.body === 'string' ? req.body : JSON.stringify(req.body),
       });
 
+      const now = Date.now();
+      if (now - timestamp > 5 * 60 * 1000) return false;
       return true;
     } catch {
       return false;
@@ -33,11 +35,6 @@ export class IntegrationTransaction {
 
   async handle(req: Request<{}, {}, WhatsappPluginTransactionDto>, res: Response) {
     try {
-      console.log('Received WhatsApp transaction:', typeof (req as any).rawBody, (req as any).rawBody);
-      const valid = await this.validateQStash(req);
-      if (!valid) return res.status(400).json({ success: false, error: 'Invalid QStash request', recivedRequest: req.body });
-
-
       const transaction = await this.transactionWhatsappService.create(req.body);
 
       return res.status(201).json({
