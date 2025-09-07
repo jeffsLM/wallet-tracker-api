@@ -7,8 +7,6 @@ import { payerRoutes } from './payer.routes';
 import { transactionRoutes } from './transaction.routes';
 import { integrationTransactionRoutes } from './integration.routes';
 
-import { captureRawBody } from '../shared/middlewares/validation.middleware';
-
 const routes = Router();
 
 routes.use('/families', familyRoutes);
@@ -17,6 +15,6 @@ routes.use('/accounts', accountRoutes);
 routes.use('/balances', accountBalanceRoutes);
 routes.use('/payers', payerRoutes);
 routes.use('/transactions', transactionRoutes);
-routes.use('/integrations', captureRawBody, integrationTransactionRoutes);
+routes.use('/integrations', integrationTransactionRoutes);
 
 export { routes };

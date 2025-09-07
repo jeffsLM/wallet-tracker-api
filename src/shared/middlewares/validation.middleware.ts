@@ -68,17 +68,3 @@ export const validateQuery = (schema: ZodTypeAny) => {
     }
   };
 };
-
-export const captureRawBody = (req: Request, res: Response, next: NextFunction) => {
-  let data = Buffer.alloc(0);
-
-  req.on('data', (chunk: Buffer) => {
-    data = Buffer.concat([data, chunk]);
-  });
-
-  req.on('end', () => {
-    (req as any).rawBody = data;
-    console.log('Raw body captured for QStash:', data.length, 'bytes');
-    next();
-  });
-};
