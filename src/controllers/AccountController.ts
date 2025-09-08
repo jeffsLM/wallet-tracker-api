@@ -18,13 +18,15 @@ export class AccountController {
       const last4Digits = req.body.last4Digits;
       const name = req.body.name;
       const type = req.body.type;
+      const groupId = req.body.groupId
 
       const account = await this.accountService.create({
         active,
         familyId,
         last4Digits,
         name,
-        type
+        type,
+        groupId
       });
 
       res.status(201).json({

@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 export const CreateBalanceSchema = z.object({
-  accountId: z.uuid('AccountId deve ser um UUID válido'),
   competence: z.date().refine((date) => date <= new Date()),
-  amount: z.number()
+  amount: z.number(),
+  groupId: z.uuid('GroupId deve ser um UUID válido')
 });
 
 export const UpdateBalanceSchema = z.object({

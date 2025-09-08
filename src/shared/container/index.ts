@@ -31,6 +31,10 @@ import { ITransactionService } from '../../services/interfaces/ITransactionServi
 import { TransactionService } from '../../services/implementations/TransactionService';
 import { ITransactionWhatsappService } from '../../services/interfaces/ITrasactionWhatsappService';
 import { TransactionWhatsappService } from '../../services/implementations/TransactionWhatsappService';
+import { IGroupRepository } from '../../repositories/interfaces/IGroupRepository';
+import { GroupRepository } from '../../repositories/implementations/GroupRepository';
+import { IGroupService } from '../../services/interfaces/IGroupService';
+import { GroupService } from '../../services/implementations/GroupService';
 
 const prisma = new PrismaClient();
 container.registerInstance('PrismaClient', prisma);
@@ -49,6 +53,11 @@ container.register<IUserRepository>(
 container.register<IAccountRepository>(
   'AccountRepository',
   { useClass: AccountRepository }
+);
+
+container.register<IGroupRepository>(
+  'GroupRepository',
+  { useClass: GroupRepository }
 );
 
 container.register<IAccountBalanceRepository>(
@@ -80,6 +89,11 @@ container.register<IUserService>(
 container.register<IAccountService>(
   'AccountService',
   { useClass: AccountService }
+);
+
+container.register<IGroupService>(
+  'GroupService',
+  { useClass: GroupService }
 );
 
 container.register<IAccountBalanceService>(

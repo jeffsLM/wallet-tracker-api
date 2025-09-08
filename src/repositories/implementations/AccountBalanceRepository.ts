@@ -14,22 +14,23 @@ export class AccountBalanceRepository implements IAccountBalanceRepository {
   async create(data: CreateBalanceDto): Promise<AccountBalance> {
     return this.prisma.accountBalance.create({
       data: {
-        accountId: data.accountId,
+        groupId: data.groupId,
         amount: data.amount,
         competence: data.competence,
       },
     });
   }
 
-  async findById(accountId: string): Promise<AccountBalance | null> {
+  async findById(id: string): Promise<AccountBalance | null> {
     const balances = await this.prisma.accountBalance.findUnique({
-      where: { id: accountId },
+      where: { id: id },
     });
     return balances;
   }
-  async findByAccountId(accountId: string): Promise<AccountBalance[] | null> {
+  async findByGroupId(id: string): Promise<AccountBalance[] | null> {
     const balances = await this.prisma.accountBalance.findMany({
-      where: { accountId },
+      where: { groupId: id },
+      include: { group: true },
     });
     return balances;
   }
@@ -37,7 +38,7 @@ export class AccountBalanceRepository implements IAccountBalanceRepository {
 
   async findAll(): Promise<AccountBalance[]> {
     return this.prisma.accountBalance.findMany({
-      include: { account: true },
+      include: { group: true },
       orderBy: { createdAt: 'desc' }
     });
   }
@@ -51,7 +52,7 @@ export class AccountBalanceRepository implements IAccountBalanceRepository {
     return this.prisma.accountBalance.update({
       where: { id },
       data: {
-        accountId: id,
+        groupId: id,
         amount: data.amount ?? account.amount,
         competence: data.competence ?? account.competence,
         updatedAt: new Date()

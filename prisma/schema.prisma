@@ -25,24 +25,38 @@ model User {
   transactions Transaction[]
 }
 
+model Group {
+  id       String           @id @default(uuid())
+  name     String
+  accounts Account[]
+  balances AccountBalance[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Account {
-  id             String           @id @default(uuid())
-  family         Family           @relation(fields: [familyId], references: [id])
-  familyId       String
-  name           String
-  type           String // cartão, cc, poupança, digital
-  last4Digits    String? // apenas para cartão
-  active         Boolean          @default(true)
-  createAt       DateTime
-  updateAt       DateTime?
-  transactions   Transaction[]
-  AccountBalance AccountBalance[]
+  id       String  @id @default(uuid())
+  family   Family  @relation(fields: [familyId], references: [id])
+  familyId String
+  group    Group?  @relation(fields: [groupId], references: [id])
+  groupId  String?
+
+  name        String
+  type        String // cartão, cc, poupança, digital
+  last4Digits String? // apenas para cartão
+  active      Boolean @default(true)
+
+  createAt DateTime
+  updateAt DateTime?
+
+  transactions Transaction[]
 }
 
 model AccountBalance {
-  id        String  @id @default(uuid())
-  account   Account @relation(fields: [accountId], references: [id])
-  accountId String
+  id      String @id @default(uuid())
+  group   Group  @relation(fields: [groupId], references: [id])
+  groupId String
 
   competence DateTime
   amount     Decimal

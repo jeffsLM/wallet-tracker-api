@@ -2,26 +2,24 @@ import { injectable, inject } from 'tsyringe';
 import { AccountBalance } from '@prisma/client';
 import { IAccountBalanceService } from '../interfaces/IAccountBalanceService';
 import { IAccountBalanceRepository } from '../../repositories/interfaces/IAccountBalanceRepository';
-import { IAccountRepository } from '../../repositories/interfaces/IAccountRepository';
 import { CreateBalanceDto, UpdateBalanceDto } from '../../shared/dtos/accountBalance.dto';
 import { NotFoundError } from '../../shared/middlewares/error.middleware';
+import { IGroupRepository } from '../../repositories/interfaces/IGroupRepository';
 
 @injectable()
 export class AccountBalanceService implements IAccountBalanceService {
   constructor(
     @inject('AccountBalanceRepository')
     private accountBalanceRepository: IAccountBalanceRepository,
-    @inject('AccountRepository')
-    private accountRepository: IAccountRepository
+    @inject('GroupRepository')
+    private groupRepository: IGroupRepository
   ) { }
 
   async create(data: CreateBalanceDto): Promise<AccountBalance> {
-    // Verificar se a conta existe
-    const account = await this.accountRepository.findById(data.accountId);
-    if (!account) {
-      throw new NotFoundError('Conta não encontrada');
+    const group = await this.groupRepository.findById(data.groupId);
+    if (!group) {
+      throw new NotFoundError('Grupo da conta não encontrado');
     }
-
 
     return this.accountBalanceRepository.create(data);
   }
@@ -34,14 +32,14 @@ export class AccountBalanceService implements IAccountBalanceService {
     return account;
   }
 
-  async findByAccountId(accountId: string): Promise<AccountBalance[] | null> {
+  async findByAccountId(id: string): Promise<AccountBalance[] | null> {
     // Verificar se a conta existe
-    const account = await this.accountRepository.findById(accountId);
-    if (!account) {
-      throw new NotFoundError('Conta não encontrada');
+    const group = await this.groupRepository.findById(id);
+    if (!group) {
+      throw new NotFoundError('Grupo não encontrado');
     }
 
-    return this.accountBalanceRepository.findByAccountId(accountId);
+    return this.accountBalanceRepository.findByGroupId(id);
   }
 
   async findAll(): Promise<AccountBalance[]> {

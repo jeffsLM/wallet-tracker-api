@@ -13,12 +13,12 @@ export class AccountBalanceController {
   async create(req: Request<{}, {}, CreateBalanceDto>, res: Response) {
     try {
 
-      const accountId = req.body.accountId;
+      const groupId = req.body.groupId;
       const amount = req.body.amount;
       const competence = req.body.competence;
 
       const account = await this.accountBalanceRepository.create({
-        accountId,
+        groupId,
         amount,
         competence
       });

@@ -16,7 +16,6 @@ export class AccountService implements IAccountService {
   ) { }
 
   async create(data: CreateAccountDto): Promise<Account> {
-    // Verificar se a família existe
     const family = await this.familyRepository.findById(data.familyId);
     if (!family) {
       throw new NotFoundError('Família não encontrada');
@@ -25,6 +24,13 @@ export class AccountService implements IAccountService {
     const cardExists = await this.accountRepository.findByLast4Digits(data.last4Digits || '');
     if (cardExists) {
       throw new Error('Cartão já existe');
+    }
+
+    if (data.groupId) {
+      const group = await this.accountRepository.findById(data.groupId);
+      if (!group) {
+        throw new NotFoundError('Grupo não encontrado');
+      }
     }
 
     return this.accountRepository.create(data);

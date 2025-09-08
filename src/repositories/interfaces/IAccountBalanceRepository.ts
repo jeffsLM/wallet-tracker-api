@@ -4,7 +4,7 @@ import { CreateBalanceDto, UpdateBalanceDto } from '../../shared/dtos/accountBal
 export interface IAccountBalanceRepository {
   create(data: CreateBalanceDto): Promise<AccountBalance>;
   findById(id: string): Promise<AccountBalance | null>;
-  findByAccountId(accountId: string): Promise<AccountBalance[] | null>;
+  findByGroupId(id: string): Promise<AccountBalance[] | null>;
   findAll(): Promise<AccountBalance[]>;
   update(id: string, data: UpdateBalanceDto): Promise<AccountBalance>;
   delete(id: string): Promise<void>;
