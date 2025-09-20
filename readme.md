@@ -74,6 +74,7 @@ Wallet Tracker API is organized into 6 main resource controllers:
 - `/api/v1/payers` - Payment source management for transaction attribution
 - `/api/v1/transactions` - Complete transaction management with filtering and installments
 - `/api/v1/balances` - Account balance tracking with competence date management
+- `/api/v1/monthly-closures` - Monthly closure management for balance reconciliation
 
 ## Key Features
 
