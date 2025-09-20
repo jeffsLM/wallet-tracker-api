@@ -1,18 +1,18 @@
 import { inject, injectable } from 'tsyringe';
-import { PrismaClient, AccountBalance } from '@prisma/client';
-import { IAccountBalanceRepository } from '../interfaces/IAccountBalanceRepository';
+import { PrismaClient, GroupBalance } from '@prisma/client';
+import { IGroupBalanceRepository } from '../interfaces/IGroupBalanceRepository';
 import { NotFoundError } from '../../shared/middlewares/error.middleware';
-import { CreateBalanceDto, UpdateBalanceDto } from '../../shared/dtos/accountBalance.dto';
+import { CreateGroupBalanceDto, UpdateGroupBalanceDto } from '../../shared/dtos/groupBalance.dto';
 
 @injectable()
-export class AccountBalanceRepository implements IAccountBalanceRepository {
+export class GroupBalanceRepository implements IGroupBalanceRepository {
   constructor(
     @inject('PrismaClient')
     private prisma: PrismaClient
   ) { }
 
-  async create(data: CreateBalanceDto): Promise<AccountBalance> {
-    return this.prisma.accountBalance.create({
+  async create(data: CreateGroupBalanceDto): Promise<GroupBalance> {
+    return this.prisma.groupBalance.create({
       data: {
         groupId: data.groupId,
         amount: data.amount,
@@ -21,14 +21,14 @@ export class AccountBalanceRepository implements IAccountBalanceRepository {
     });
   }
 
-  async findById(id: string): Promise<AccountBalance | null> {
-    const balances = await this.prisma.accountBalance.findUnique({
+  async findById(id: string): Promise<GroupBalance | null> {
+    const balances = await this.prisma.groupBalance.findUnique({
       where: { id: id },
     });
     return balances;
   }
-  async findByGroupId(id: string): Promise<AccountBalance[] | null> {
-    const balances = await this.prisma.accountBalance.findMany({
+  async findByGroupId(id: string): Promise<GroupBalance[] | null> {
+    const balances = await this.prisma.groupBalance.findMany({
       where: { groupId: id },
       include: { group: true },
     });
@@ -36,20 +36,20 @@ export class AccountBalanceRepository implements IAccountBalanceRepository {
   }
 
 
-  async findAll(): Promise<AccountBalance[]> {
-    return this.prisma.accountBalance.findMany({
+  async findAll(): Promise<GroupBalance[]> {
+    return this.prisma.groupBalance.findMany({
       include: { group: true },
       orderBy: { createdAt: 'desc' }
     });
   }
 
-  async update(id: string, data: UpdateBalanceDto): Promise<AccountBalance> {
+  async update(id: string, data: UpdateGroupBalanceDto): Promise<GroupBalance> {
     const account = await this.findById(id);
     if (!account) {
       throw new NotFoundError('Conta não encontrada');
     }
 
-    return this.prisma.accountBalance.update({
+    return this.prisma.groupBalance.update({
       where: { id },
       data: {
         groupId: id,

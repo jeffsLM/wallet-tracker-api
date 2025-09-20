@@ -8,8 +8,8 @@ import { FamilyRepository } from '../../repositories/implementations/FamilyRepos
 import { IUserRepository } from '../../repositories/interfaces/IUserRepository';
 import { UserRepository } from '../../repositories/implementations/UserRepository';
 import { IAccountRepository } from '../../repositories/interfaces/IAccountRepository';
-import { AccountBalanceRepository } from '../../repositories/implementations/AccountBalanceRepository';
-import { IAccountBalanceRepository } from '../../repositories/interfaces/IAccountBalanceRepository';
+import { GroupBalanceRepository } from '../../repositories/implementations/GroupBalanceRepository';
+import { IGroupBalanceRepository } from '../../repositories/interfaces/IGroupBalanceRepository';
 import { AccountRepository } from '../../repositories/implementations/AccountRepository';
 import { IPayerRepository } from '../../repositories/interfaces/IPayerRepository';
 import { PayerRepository } from '../../repositories/implementations/PayerRepository';
@@ -60,9 +60,9 @@ container.register<IGroupRepository>(
   { useClass: GroupRepository }
 );
 
-container.register<IAccountBalanceRepository>(
-  'AccountBalanceRepository',
-  { useClass: AccountBalanceRepository }
+container.register<IGroupBalanceRepository>(
+  'GroupBalanceRepository',
+  { useClass: GroupBalanceRepository }
 );
 
 container.register<IPayerRepository>(

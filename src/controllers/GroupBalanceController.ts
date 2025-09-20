@@ -1,23 +1,23 @@
 import { Request, Response } from 'express';
 import { injectable, inject } from 'tsyringe';
-import { BalanceParamsDto, CreateBalanceDto, UpdateBalanceDto } from '../shared/dtos/accountBalance.dto';
-import { IAccountBalanceRepository } from '../repositories/interfaces/IAccountBalanceRepository';
+import { GroupBalanceParamsDto, CreateGroupBalanceDto, UpdateGroupBalanceDto } from '../shared/dtos/groupBalance.dto';
+import { IGroupBalanceRepository } from '../repositories/interfaces/IGroupBalanceRepository';
 
 @injectable()
-export class AccountBalanceController {
+export class GroupBalanceController {
   constructor(
-    @inject('accountBalanceRepository')
-    private accountBalanceRepository: IAccountBalanceRepository
+    @inject('GroupBalanceRepository')
+    private groupBalanceRepository: IGroupBalanceRepository
   ) { }
 
-  async create(req: Request<{}, {}, CreateBalanceDto>, res: Response) {
+  async create(req: Request<{}, {}, CreateGroupBalanceDto>, res: Response) {
     try {
 
       const groupId = req.body.groupId;
       const amount = req.body.amount;
       const competence = req.body.competence;
 
-      const account = await this.accountBalanceRepository.create({
+      const account = await this.groupBalanceRepository.create({
         groupId,
         amount,
         competence
@@ -33,10 +33,10 @@ export class AccountBalanceController {
     }
   }
 
-  async findById(req: Request<BalanceParamsDto>, res: Response) {
+  async findById(req: Request<GroupBalanceParamsDto>, res: Response) {
     try {
       const { id } = req.params;
-      const account = await this.accountBalanceRepository.findById(id);
+      const account = await this.groupBalanceRepository.findById(id);
 
       res.json({
         success: true,
@@ -49,7 +49,7 @@ export class AccountBalanceController {
 
   async findAll(req: Request, res: Response) {
     try {
-      const accounts = await this.accountBalanceRepository.findAll();
+      const accounts = await this.groupBalanceRepository.findAll();
 
       res.json({
         success: true,
@@ -60,14 +60,14 @@ export class AccountBalanceController {
     }
   }
 
-  async update(req: Request<BalanceParamsDto, {}, UpdateBalanceDto>, res: Response) {
+  async update(req: Request<GroupBalanceParamsDto, {}, UpdateGroupBalanceDto>, res: Response) {
     try {
       const { id } = req.params;
 
       const amount = req.body.amount;
       const competence = req.body.competence;
 
-      const account = await this.accountBalanceRepository.update(id, {
+      const account = await this.groupBalanceRepository.update(id, {
         amount,
         competence
       });
@@ -82,10 +82,10 @@ export class AccountBalanceController {
     }
   }
 
-  async delete(req: Request<BalanceParamsDto>, res: Response) {
+  async delete(req: Request<GroupBalanceParamsDto>, res: Response) {
     try {
       const { id } = req.params;
-      await this.accountBalanceRepository.delete(id);
+      await this.groupBalanceRepository.delete(id);
 
       res.status(204).send();
     } catch (error) {

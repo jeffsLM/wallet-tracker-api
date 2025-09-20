@@ -8,11 +8,12 @@ datasource db {
 }
 
 model Family {
-  id       String    @id @default(uuid())
-  name     String
-  createAt DateTime
-  users    User[]
-  accounts Account[]
+  id             String           @id @default(uuid())
+  name           String
+  createAt       DateTime
+  users          User[]
+  accounts       Account[]
+  MonthlyClosure MonthlyClosure[]
 }
 
 model User {
@@ -26,10 +27,10 @@ model User {
 }
 
 model Group {
-  id       String           @id @default(uuid())
+  id       String         @id @default(uuid())
   name     String
   accounts Account[]
-  balances AccountBalance[]
+  balances GroupBalance[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -53,7 +54,7 @@ model Account {
   transactions Transaction[]
 }
 
-model AccountBalance {
+model GroupBalance {
   id      String @id @default(uuid())
   group   Group  @relation(fields: [groupId], references: [id])
   groupId String
@@ -90,4 +91,25 @@ model Transaction {
   description      String?
   status           String?
   createAt         DateTime
+}
+
+model MonthlyClosure {
+  id String @id @default(uuid())
+
+  // Referência da família, pois o fechamento é por família
+  family   Family @relation(fields: [familyId], references: [id])
+  familyId String
+
+  // Competência: mês/ano que esse fechamento representa
+  competence DateTime
+
+  // Valores processados
+  initialBalance Decimal? @default(0.0) // saldo que veio do mês anterior
+  totalIncome    Decimal? @default(0.0) // receitas do mês
+  totalExpenses  Decimal? @default(0.0) // gastos do mês
+
+  status String @default("open") // open, closed, processing
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
