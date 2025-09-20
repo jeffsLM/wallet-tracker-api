@@ -1,13 +1,13 @@
 import { injectable, inject } from 'tsyringe';
 import { GroupBalance } from '@prisma/client';
-import { IAccountBalanceService } from '../interfaces/IAccountBalanceService';
+import { IGroupBalanceService } from '../interfaces/IGroupBalanceService';
 import { IGroupBalanceRepository } from '../../repositories/interfaces/IGroupBalanceRepository';
 import { CreateGroupBalanceDto, UpdateGroupBalanceDto } from '../../shared/dtos/groupBalance.dto';
 import { NotFoundError } from '../../shared/middlewares/error.middleware';
 import { IGroupRepository } from '../../repositories/interfaces/IGroupRepository';
 
 @injectable()
-export class AccountBalanceService implements IAccountBalanceService {
+export class GroupBalanceService implements IGroupBalanceService {
   constructor(
     @inject('GroupBalanceRepository')
     private groupBalanceRepository: IGroupBalanceRepository,

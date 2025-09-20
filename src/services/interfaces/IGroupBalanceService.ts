@@ -1,7 +1,7 @@
 import { GroupBalance } from '@prisma/client';
 import { CreateGroupBalanceDto, UpdateGroupBalanceDto } from '../../shared/dtos/groupBalance.dto';
 
-export interface IAccountBalanceService {
+export interface IGroupBalanceService {
   create(data: CreateGroupBalanceDto): Promise<GroupBalance>;
   findById(id: string): Promise<GroupBalance>;
   findByAccountId(accountId: string): Promise<GroupBalance[] | null>;

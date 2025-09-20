@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-const TypeEnum = z.enum(['open', 'closed', 'processing'], {
-  message: 'Tipo deve ser: open, closed ou processing',
+const TypeEnum = z.enum(['open', 'closed'], {
+  message: 'Tipo deve ser: open ou closed',
 });
 
 export const CreateMonthlyClosureSchema = z.object({

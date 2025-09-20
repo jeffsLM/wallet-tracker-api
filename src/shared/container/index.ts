@@ -21,8 +21,8 @@ import { IFamilyService } from '../../services/interfaces/IFamilyService';
 import { FamilyService } from '../../services/implementations/FamilyService';
 import { IUserService } from '../../services/interfaces/IUserService';
 import { UserService } from '../../services/implementations/UserService';
-import { IAccountBalanceService } from '../../services/interfaces/IAccountBalanceService';
-import { AccountBalanceService } from '../../services/implementations/AccountBalanceService';
+import { IGroupBalanceService } from '../../services/interfaces/IGroupBalanceService';
+import { GroupBalanceService } from '../../services/implementations/GroupBalanceService';
 import { IAccountService } from '../../services/interfaces/IAccountService';
 import { AccountService } from '../../services/implementations/AccountService';
 import { IPayerService } from '../../services/interfaces/IPayerService';
@@ -35,6 +35,10 @@ import { IGroupRepository } from '../../repositories/interfaces/IGroupRepository
 import { GroupRepository } from '../../repositories/implementations/GroupRepository';
 import { IGroupService } from '../../services/interfaces/IGroupService';
 import { GroupService } from '../../services/implementations/GroupService';
+import { MonthlyClosureRepository } from '../../repositories/implementations/MonthlyClosureRepository';
+import { IMonthlyClosureRepository } from '../../repositories/interfaces/IMonthlyClosureRepository';
+import { IMonthlyClosureService } from '../../services/interfaces/IMonthlyClosureService';
+import { MonthlyClosureService } from '../../services/implementations/MonthlyClosureService';
 
 const prisma = new PrismaClient();
 container.registerInstance('PrismaClient', prisma);
@@ -75,6 +79,11 @@ container.register<ITransactionRepository>(
   { useClass: TransactionRepository }
 );
 
+container.register<IMonthlyClosureRepository>(
+  'MonthltyClosureRepository',
+  { useClass: MonthlyClosureRepository }
+);
+
 // Registrar Services
 container.register<IFamilyService>(
   'FamilyService',
@@ -96,9 +105,9 @@ container.register<IGroupService>(
   { useClass: GroupService }
 );
 
-container.register<IAccountBalanceService>(
-  'AccountBalanceService',
-  { useClass: AccountBalanceService }
+container.register<IGroupBalanceService>(
+  'GroupBalanceService',
+  { useClass: GroupBalanceService }
 );
 
 container.register<IPayerService>(
@@ -114,6 +123,11 @@ container.register<ITransactionService>(
 container.register<ITransactionWhatsappService>(
   'TransactionWhatsappService',
   { useClass: TransactionWhatsappService }
+);
+
+container.register<IMonthlyClosureService>(
+  'MonthlyClosureService',
+  { useClass: MonthlyClosureService }
 );
 
 export { container, prisma };

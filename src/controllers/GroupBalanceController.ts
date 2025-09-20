@@ -6,8 +6,8 @@ import { IGroupBalanceRepository } from '../repositories/interfaces/IGroupBalanc
 @injectable()
 export class GroupBalanceController {
   constructor(
-    @inject('GroupBalanceRepository')
-    private groupBalanceRepository: IGroupBalanceRepository
+    @inject('GroupBalanceService')
+    private groupBalanceService: IGroupBalanceRepository
   ) { }
 
   async create(req: Request<{}, {}, CreateGroupBalanceDto>, res: Response) {
@@ -17,7 +17,7 @@ export class GroupBalanceController {
       const amount = req.body.amount;
       const competence = req.body.competence;
 
-      const account = await this.groupBalanceRepository.create({
+      const account = await this.groupBalanceService.create({
         groupId,
         amount,
         competence
@@ -36,7 +36,7 @@ export class GroupBalanceController {
   async findById(req: Request<GroupBalanceParamsDto>, res: Response) {
     try {
       const { id } = req.params;
-      const account = await this.groupBalanceRepository.findById(id);
+      const account = await this.groupBalanceService.findById(id);
 
       res.json({
         success: true,
@@ -49,7 +49,7 @@ export class GroupBalanceController {
 
   async findAll(req: Request, res: Response) {
     try {
-      const accounts = await this.groupBalanceRepository.findAll();
+      const accounts = await this.groupBalanceService.findAll();
 
       res.json({
         success: true,
@@ -67,7 +67,7 @@ export class GroupBalanceController {
       const amount = req.body.amount;
       const competence = req.body.competence;
 
-      const account = await this.groupBalanceRepository.update(id, {
+      const account = await this.groupBalanceService.update(id, {
         amount,
         competence
       });
@@ -85,7 +85,7 @@ export class GroupBalanceController {
   async delete(req: Request<GroupBalanceParamsDto>, res: Response) {
     try {
       const { id } = req.params;
-      await this.groupBalanceRepository.delete(id);
+      await this.groupBalanceService.delete(id);
 
       res.status(204).send();
     } catch (error) {
