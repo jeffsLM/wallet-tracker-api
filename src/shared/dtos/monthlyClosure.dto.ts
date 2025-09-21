@@ -6,11 +6,17 @@ const TypeEnum = z.enum(['open', 'closed'], {
 
 export const CreateMonthlyClosureSchema = z.object({
   familyId: z.uuid('FamilyId deve ser um UUID válido'),
-  competence: z.date().refine((date) => date <= new Date()),
+  competence: z.string().refine(
+    (date) => !isNaN(Date.parse(date)),
+    "Data deve estar no formato ISO válido"
+  ),
 });
 
 export const UpdateMonthlyClosureSchema = z.object({
-  competence: z.date().refine((date) => date <= new Date()).optional(),
+  competence: z.string().refine(
+    (date) => !isNaN(Date.parse(date)),
+    "Data deve estar no formato ISO válido"
+  ).optional(),
   initialBalance: z.number().optional().nullable(),
   totalIncome: z.number().optional().nullable(),
   totalExpenses: z.number().optional().nullable(),

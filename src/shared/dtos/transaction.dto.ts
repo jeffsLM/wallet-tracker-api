@@ -17,7 +17,7 @@ export const CreateTransactionSchema = z.object({
 export const UpdateTransactionSchema = z.object({
   payerId: z.uuid('PayerId deve ser um UUID válido').optional().nullable(),
   userId: z.uuid('UserId deve ser um UUID válido').optional().nullable(),
-  accountingPeriod: z.date('Data deve estar no formato ISO').optional(),
+  accountingPeriod: z.string().optional().nullable(),
   operationType: z.string().min(1, 'Tipo de operação é obrigatório').optional(),
   amount: z.number().positive('Valor deve ser positivo').optional(),
   installment: z.number().int().positive('Parcela deve ser um número positivo').optional().nullable(),

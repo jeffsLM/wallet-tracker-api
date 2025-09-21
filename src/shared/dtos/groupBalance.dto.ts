@@ -1,13 +1,19 @@
 import { z } from 'zod';
 
 export const CreateGroupBalanceSchema = z.object({
-  competence: z.date().refine((date) => date <= new Date()),
+  competence: z.string().refine(
+    (date) => !isNaN(Date.parse(date)),
+    "Data deve estar no formato ISO válido"
+  ),
   amount: z.number(),
   groupId: z.uuid('GroupId deve ser um UUID válido')
 });
 
 export const UpdateGroupBalanceSchema = z.object({
-  competence: z.date().refine((date) => date <= new Date()).optional(),
+  competence: z.string().refine(
+    (date) => !isNaN(Date.parse(date)),
+    "Data deve estar no formato ISO válido"
+  ).optional().nullable(),
   amount: z.number().optional().nullable()
 });
 

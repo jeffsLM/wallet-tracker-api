@@ -4,6 +4,7 @@ import { validateBody, validateParams } from '../shared/middlewares/validation.m
 import {
   UpdateGroupBalanceSchema,
   GroupBalanceParamsSchema,
+  CreateGroupBalanceSchema,
   GroupBalanceParamsDto,
 } from '../shared/dtos/groupBalance.dto';
 import { container } from '../shared/container';
@@ -13,7 +14,7 @@ const groupBalanceController = container.resolve(GroupBalanceController);
 
 groupBalanceRoutes.post(
   '/',
-  validateBody(GroupBalanceParamsSchema),
+  validateBody(CreateGroupBalanceSchema),
   (req, res, next) => groupBalanceController.create(req, res).catch(next)
 );
 
