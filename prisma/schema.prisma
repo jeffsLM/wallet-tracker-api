@@ -59,8 +59,9 @@ model GroupBalance {
   group   Group  @relation(fields: [groupId], references: [id])
   groupId String
 
-  competence DateTime
-  amount     Decimal
+  competence  DateTime
+  amount      Decimal
+  description String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -104,9 +105,8 @@ model MonthlyClosure {
   competence DateTime
 
   // Valores processados
-  initialBalance Decimal? @default(0.0) // saldo que veio do mês anterior
-  totalIncome    Decimal? @default(0.0) // receitas do mês
-  totalExpenses  Decimal? @default(0.0) // gastos do mês
+  totalIncome   Decimal? @default(0.0) // receitas do mês
+  totalExpenses Decimal? @default(0.0) // gastos do mês
 
   status String @default("open") // open, closed, processing
 

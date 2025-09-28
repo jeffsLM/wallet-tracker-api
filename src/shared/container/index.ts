@@ -39,6 +39,8 @@ import { MonthlyClosureRepository } from '../../repositories/implementations/Mon
 import { IMonthlyClosureRepository } from '../../repositories/interfaces/IMonthlyClosureRepository';
 import { IMonthlyClosureService } from '../../services/interfaces/IMonthlyClosureService';
 import { MonthlyClosureService } from '../../services/implementations/MonthlyClosureService';
+import { MonthlyClosureProcessorService } from '../../services/implementations/MonthlyClosureProcessorService';
+import { IMonthlyClosureProcessorService } from '../../services/interfaces/IMonthlyClosureProcessorService';
 
 const prisma = new PrismaClient();
 container.registerInstance('PrismaClient', prisma);
@@ -80,7 +82,7 @@ container.register<ITransactionRepository>(
 );
 
 container.register<IMonthlyClosureRepository>(
-  'MonthltyClosureRepository',
+  'MonthlyClosureRepository',
   { useClass: MonthlyClosureRepository }
 );
 
@@ -128,6 +130,10 @@ container.register<ITransactionWhatsappService>(
 container.register<IMonthlyClosureService>(
   'MonthlyClosureService',
   { useClass: MonthlyClosureService }
+);
+container.register<IMonthlyClosureProcessorService>(
+  'MonthlyClosureProcessorService',
+  { useClass: MonthlyClosureProcessorService }
 );
 
 export { container, prisma };

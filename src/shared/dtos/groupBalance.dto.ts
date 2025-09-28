@@ -6,6 +6,7 @@ export const CreateGroupBalanceSchema = z.object({
     "Data deve estar no formato ISO válido"
   ),
   amount: z.number(),
+  description: z.string().optional().nullable(),
   groupId: z.uuid('GroupId deve ser um UUID válido')
 });
 

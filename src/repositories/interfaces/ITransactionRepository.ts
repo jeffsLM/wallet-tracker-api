@@ -9,6 +9,16 @@ export interface ITransactionRepository {
     payer: Payer | null
   }) | null>;
   findByAccountId(accountId: string): Promise<Transaction[]>;
+  findByCompetence(competence: Date): Promise<(Transaction & {
+    account: Account;
+    user: User | null;
+    payer: Payer | null;
+  })[]>;
+  findTransactionsByFamilyIds(familyIds: string[]): Promise<(Transaction & {
+    account: Account;
+    user: User | null;
+    payer: Payer | null
+  })[]>
   findWithFilters(filters: TransactionQueryDto): Promise<{
     transactions: (Transaction & {
       account: Account;
@@ -20,4 +30,5 @@ export interface ITransactionRepository {
   findAll(): Promise<Transaction[]>;
   update(id: string, data: UpdateTransactionDto): Promise<Transaction>;
   delete(id: string): Promise<void>;
+
 }

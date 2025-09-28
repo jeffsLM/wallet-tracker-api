@@ -12,8 +12,6 @@ export class IntegrationTransaction {
 
   async handle(req: Request<{}, {}, WhatsappPluginTransactionDto>, res: Response) {
     try {
-
-      console.log('[DB DEBUG] Validando QStash...');
       const transaction = await this.transactionWhatsappService.create(req.body);
 
       return res.status(201).json({

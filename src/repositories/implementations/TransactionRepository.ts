@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { inject, injectable } from 'tsyringe';
-import { PrismaClient, Transaction, Account, User, Payer, Prisma } from '@prisma/client';
+import { PrismaClient, Transaction, Account, User, Payer, Prisma, Group, GroupBalance } from '@prisma/client';
 import { ITransactionRepository } from '../interfaces/ITransactionRepository';
 import { CreateTransactionDto, UpdateTransactionDto, TransactionQueryDto } from '../../shared/dtos/transaction.dto';
 import { NotFoundError } from '../../shared/middlewares/error.middleware';
@@ -49,6 +49,45 @@ export class TransactionRepository implements ITransactionRepository {
         account: true,
         user: true,
         payer: true
+      },
+      orderBy: { createAt: 'desc' }
+    });
+  }
+
+  async findTransactionsByFamilyIds(familyIds: string[]): Promise<(Transaction & {
+    account: Account;
+    user: User | null;
+    payer: Payer | null
+  })[]> {
+    return this.prisma.transaction.findMany({
+      where: { account: { familyId: { in: familyIds } } },
+      include: {
+        account: true,
+        user: true,
+        payer: true
+      },
+      orderBy: { createAt: 'desc' }
+    });
+  }
+
+  async findByCompetence(competence: Date): Promise<(Transaction & {
+    account: Account;
+    user: User | null;
+    payer: Payer | null;
+  })[]> {
+    const start = dayjs(competence).startOf('month').toDate();
+    const end = dayjs(competence).endOf('month').toDate();
+    return this.prisma.transaction.findMany({
+      where: {
+        accountingPeriod: {
+          gt: start,
+          lte: end,
+        },
+      },
+      include: {
+        account: true,
+        user: true,
+        payer: true,
       },
       orderBy: { createAt: 'desc' }
     });

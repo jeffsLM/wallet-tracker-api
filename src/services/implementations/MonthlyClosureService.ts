@@ -9,7 +9,7 @@ import { NotFoundError } from '../../shared/middlewares/error.middleware';
 @injectable()
 export class MonthlyClosureService implements IMonthlyClosureService {
   constructor(
-    @inject('MonthltyClosureRepository')
+    @inject('MonthlyClosureRepository')
     private monthlyClosureRepository: IMonthlyClosureRepository,
     @inject('FamilyRepository')
     private familyRepository: IFamilyRepository
