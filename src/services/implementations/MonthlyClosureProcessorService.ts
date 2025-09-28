@@ -59,6 +59,7 @@ export class MonthlyClosureProcessorService implements IMonthlyClosureProcessorS
         competence: nextMonthByCompetence.toISOString(),
         amount: (groupBalance.amountExpenses - groupBalance.amountIncome) * -1,
         createdAt: new Date().toISOString(),
+        description: 'Previous Month Balance'
       }
     });
 
