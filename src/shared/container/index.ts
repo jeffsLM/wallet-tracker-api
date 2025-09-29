@@ -41,6 +41,8 @@ import { IMonthlyClosureService } from '../../services/interfaces/IMonthlyClosur
 import { MonthlyClosureService } from '../../services/implementations/MonthlyClosureService';
 import { MonthlyClosureProcessorService } from '../../services/implementations/MonthlyClosureProcessorService';
 import { IMonthlyClosureProcessorService } from '../../services/interfaces/IMonthlyClosureProcessorService';
+import { ReportService } from '../../services/implementations/ReportService';
+import { IReportService } from '../../services/interfaces/IReportService';
 
 const prisma = new PrismaClient();
 container.registerInstance('PrismaClient', prisma);
@@ -131,9 +133,15 @@ container.register<IMonthlyClosureService>(
   'MonthlyClosureService',
   { useClass: MonthlyClosureService }
 );
+
 container.register<IMonthlyClosureProcessorService>(
   'MonthlyClosureProcessorService',
   { useClass: MonthlyClosureProcessorService }
+);
+
+container.register<IReportService>(
+  'ReportService',
+  { useClass: ReportService }
 );
 
 export { container, prisma };

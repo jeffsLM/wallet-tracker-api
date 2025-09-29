@@ -14,6 +14,11 @@ export interface ITransactionRepository {
     user: User | null;
     payer: Payer | null;
   })[]>;
+  findByPeriod(dateStart: Date, dateEnd: Date): Promise<(Transaction & {
+    account: Account;
+    user: User | null;
+    payer: Payer | null;
+  })[]>
   findTransactionsByFamilyIds(familyIds: string[]): Promise<(Transaction & {
     account: Account;
     user: User | null;

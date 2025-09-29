@@ -92,6 +92,28 @@ export class TransactionRepository implements ITransactionRepository {
       orderBy: { createAt: 'desc' }
     });
   }
+  async findByPeriod(dateStart: Date, dateEnd: Date): Promise<(Transaction & {
+    account: Account;
+    user: User | null;
+    payer: Payer | null;
+  })[]> {
+    const start = dayjs(dateStart).toDate();
+    const end = dayjs(dateEnd).toDate();
+    return this.prisma.transaction.findMany({
+      where: {
+        accountingPeriod: {
+          gt: start,
+          lte: end,
+        },
+      },
+      include: {
+        account: true,
+        user: true,
+        payer: true,
+      },
+      orderBy: { createAt: 'desc' }
+    });
+  }
 
   async findWithFilters(filters: TransactionQueryDto): Promise<{
     transactions: (Transaction & {

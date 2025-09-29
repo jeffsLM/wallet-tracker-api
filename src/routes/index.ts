@@ -8,6 +8,7 @@ import { transactionRoutes } from './transaction.routes';
 import { integrationTransactionRoutes } from './integration.routes';
 import { monthlyClosureRoutes } from './monthlyClosure.routes';
 import { monthlyClosureProcessorRoutes } from './monthlyClosureProcessor.routes';
+import { reportRoutes } from './report.routes';
 
 const routes = Router();
 
@@ -20,5 +21,6 @@ routes.use('/transactions', transactionRoutes);
 routes.use('/integrations', integrationTransactionRoutes);
 routes.use('/monthly-closures', monthlyClosureRoutes);
 routes.use('/monthly-processor', monthlyClosureProcessorRoutes);
+routes.use('/reports', reportRoutes)
 
 export { routes };
