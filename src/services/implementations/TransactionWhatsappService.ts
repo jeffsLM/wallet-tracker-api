@@ -9,6 +9,7 @@ import { IUserRepository } from '../../repositories/interfaces/IUserRepository';
 import { WhatsappPluginTransactionDto } from '../../shared/dtos/transactionWhatsappPlugin.dto';
 import { IFamilyRepository } from '../../repositories/interfaces/IFamilyRepository';
 import { IPayerRepository } from '../../repositories/interfaces/IPayerRepository';
+import { ICheckpointService } from '../interfaces/ICheckpointSevice';
 
 @injectable()
 export class TransactionWhatsappService implements ITransactionWhatsappService {
@@ -22,7 +23,9 @@ export class TransactionWhatsappService implements ITransactionWhatsappService {
     @inject('FamilyRepository')
     private familyRepository: IFamilyRepository,
     @inject('PayerRepository')
-    private payerRepository: IPayerRepository
+    private payerRepository: IPayerRepository,
+    @inject('CheckpointService')
+    private checkpointService: ICheckpointService,
   ) { }
 
   async create(data: WhatsappPluginTransactionDto): Promise<Transaction[]> {
@@ -108,6 +111,8 @@ export class TransactionWhatsappService implements ITransactionWhatsappService {
       console.error('Transaction failed:', result.reason);
       return false;
     }).map(result => result.value);
+
+    await this.checkpointService.checkAfterTransaction(accountInfo.id);
 
     return transactions;
   }

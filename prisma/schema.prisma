@@ -8,12 +8,13 @@ datasource db {
 }
 
 model Family {
-  id             String           @id @default(uuid())
-  name           String
-  createAt       DateTime
-  users          User[]
-  accounts       Account[]
-  MonthlyClosure MonthlyClosure[]
+  id                String              @id @default(uuid())
+  name              String
+  createAt          DateTime
+  users             User[]
+  accounts          Account[]
+  MonthlyClosure    MonthlyClosure[]
+  BalanceCheckpoint BalanceCheckpoint[]
 }
 
 model User {
@@ -32,8 +33,9 @@ model Group {
   accounts Account[]
   balances GroupBalance[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  BalanceCheckpoint BalanceCheckpoint[]
 }
 
 model Account {
@@ -51,7 +53,8 @@ model Account {
   createAt DateTime
   updateAt DateTime?
 
-  transactions Transaction[]
+  transactions      Transaction[]
+  BalanceCheckpoint BalanceCheckpoint[]
 }
 
 model GroupBalance {
@@ -112,4 +115,46 @@ model MonthlyClosure {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model BalanceCheckpoint {
+  id       String @id @default(uuid())
+  familyId String
+  family   Family @relation(fields: [familyId], references: [id])
+
+  accountId String? // Opcional: checkpoint para conta específica
+  account   Account? @relation(fields: [accountId], references: [id])
+
+  groupId String? // Opcional: checkpoint para grupo
+  group   Group?  @relation(fields: [groupId], references: [id])
+
+  threshold Decimal // Valor do checkpoint (ex: 2000, 3000, 4000)
+  type      String // "account", "group" ou "family"
+  active    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  notifications CheckpointNotification[]
+
+  @@index([familyId])
+  @@index([accountId])
+  @@index([groupId])
+}
+
+model CheckpointNotification {
+  id           String            @id @default(uuid())
+  checkpoint   BalanceCheckpoint @relation(fields: [checkpointId], references: [id])
+  checkpointId String
+
+  competence  DateTime // mês/ano (primeiro dia do mês)
+  sentAt      DateTime
+  totalAmount Decimal // total acumulado no momento do envio
+
+  messageId String? // ID da mensagem no RabbitMQ
+  status    String  @default("sent") // sent, failed
+
+  @@unique([checkpointId, competence]) // ⚠️ IMPORTANTE: Previne duplicatas
+  @@index([competence])
+  @@index([sentAt])
 }

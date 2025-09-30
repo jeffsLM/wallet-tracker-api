@@ -43,9 +43,15 @@ import { MonthlyClosureProcessorService } from '../../services/implementations/M
 import { IMonthlyClosureProcessorService } from '../../services/interfaces/IMonthlyClosureProcessorService';
 import { ReportService } from '../../services/implementations/ReportService';
 import { IReportService } from '../../services/interfaces/IReportService';
+import { ICheckpointService } from '../../services/interfaces/ICheckpointSevice';
+import { CheckpointService } from '../../services/implementations/CheckpointService';
 
 const prisma = new PrismaClient();
 container.registerInstance('PrismaClient', prisma);
+container.registerInstance('RabbitMQConfig', {
+  url: process.env.CLOUDAMQP_URL || '',
+  queue: process.env.RABBITMQ_QUEUE_TO_WHATSAPP || 'to-whatsapp',
+});
 
 // Registrar Repositories
 container.register<IFamilyRepository>(
@@ -142,6 +148,11 @@ container.register<IMonthlyClosureProcessorService>(
 container.register<IReportService>(
   'ReportService',
   { useClass: ReportService }
+);
+
+container.register<ICheckpointService>(
+  'CheckpointService',
+  { useClass: CheckpointService }
 );
 
 export { container, prisma };

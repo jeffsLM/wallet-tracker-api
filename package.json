@@ -12,7 +12,9 @@
   },
   "dependencies": {
     "@prisma/client": "^5.15.0",
+    "@types/amqplib": "^0.10.7",
     "@upstash/qstash": "^2.8.2",
+    "amqplib": "^0.10.9",
     "cors": "^2.8.5",
     "dayjs": "^1.11.18",
     "express": "^4.19.0",
