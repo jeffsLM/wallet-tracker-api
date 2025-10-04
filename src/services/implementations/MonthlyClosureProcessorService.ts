@@ -26,7 +26,7 @@ export class MonthlyClosureProcessorService implements IMonthlyClosureProcessorS
       throw new NotFoundError('Monthly closure not found');
     }
 
-    const transactions = await this.transactionRepository.findByCompetence(monthlyClosure.competence);
+    const transactions = await this.transactionRepository.findByCompetenceAndAccountType(monthlyClosure.competence);
     const groupBalances = await this.groupBalanceRepository.findByCompetence(monthlyClosure.competence);
 
     const totalExpenses = transactions.reduce((acc, curr) => acc + curr.amount.toNumber(), 0);
