@@ -155,22 +155,20 @@ export class ReportService implements IReportService {
         acc[monthKey] = {
           month: monthKey,
           total: 0,
-          count: 0
         };
       }
 
       acc[monthKey].total += transaction.amount.toNumber();
-      acc[monthKey].count += 1;
+
 
       return acc;
-    }, {} as Record<string, { month: string; total: number; count: number }>);
+    }, {} as Record<string, { month: string; total: number }>);
 
     // 3. Criar resultado com todos os meses (preenchendo com zeros quando necessário)
     const result = allMonths.map(month => {
       return expansesByMonth[month] || {
         month,
         total: 0,
-        count: 0
       };
     });
 
