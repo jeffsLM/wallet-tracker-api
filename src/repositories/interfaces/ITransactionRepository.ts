@@ -9,7 +9,7 @@ export interface ITransactionRepository {
     payer: Payer | null
   }) | null>;
   findByAccountId(accountId: string): Promise<Transaction[]>;
-  findByCompetence(competence: Date): Promise<(Transaction & {
+  findByCompetenceAndAccountType(competence: Date, accountType?: string[]): Promise<(Transaction & {
     account: Account;
     user: User | null;
     payer: Payer | null;

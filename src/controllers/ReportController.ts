@@ -13,9 +13,10 @@ export class ReportController {
   async overflowToCredit(req: Request<{}, {}, ReportParamsByCompetenceDto>, res: Response) {
     try {
       const date = req.body.date;
+      const accountType = req.body.accountType;
 
       const report = await this.reportService.overflowToCredit({
-        date
+        date, accountType
       });
 
       res.status(200).json({
@@ -90,9 +91,10 @@ export class ReportController {
   async expansesOverviewByPayer(req: Request<{}, {}, ReportParamsByCompetenceDto>, res: Response) {
     try {
       const date = req.body.date;
+      const accountType = req.body.accountType;
 
       const report = await this.reportService.expansesOverviewByPayer({
-        date
+        date, accountType
       });
 
       res.status(200).json({

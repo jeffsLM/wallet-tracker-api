@@ -118,14 +118,15 @@ model MonthlyClosure {
 }
 
 model BalanceCheckpoint {
-  id       String @id @default(uuid())
-  familyId String
-  family   Family @relation(fields: [familyId], references: [id])
+  id String @id @default(uuid())
 
-  accountId String? // Opcional: checkpoint para conta específica
+  familyId String? // Agora opcional
+  family   Family? @relation(fields: [familyId], references: [id])
+
+  accountId String? // Opcional
   account   Account? @relation(fields: [accountId], references: [id])
 
-  groupId String? // Opcional: checkpoint para grupo
+  groupId String? // Opcional
   group   Group?  @relation(fields: [groupId], references: [id])
 
   threshold Decimal // Valor do checkpoint (ex: 2000, 3000, 4000)

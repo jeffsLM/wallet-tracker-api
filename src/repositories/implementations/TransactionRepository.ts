@@ -70,19 +70,27 @@ export class TransactionRepository implements ITransactionRepository {
     });
   }
 
-  async findByCompetence(competence: Date): Promise<(Transaction & {
+  async findByCompetenceAndAccountType(competence: Date, accountType?: string[]): Promise<(Transaction & {
     account: Account;
     user: User | null;
     payer: Payer | null;
   })[]> {
     const start = dayjs(competence).startOf('month').toDate();
     const end = dayjs(competence).endOf('month').toDate();
+    const hasAccountType = accountType && accountType.length > 0;
     return this.prisma.transaction.findMany({
       where: {
         accountingPeriod: {
           gt: start,
           lte: end,
         },
+        ...(hasAccountType && {
+          account: {
+            type: {
+              in: accountType
+            }
+          }
+        })
       },
       include: {
         account: true,

@@ -12,134 +12,173 @@ export class CheckpointService implements ICheckpointService {
 
   async checkAfterTransaction(accountId: string): Promise<void> {
     try {
-      // Busca a conta e família
+      const competence = new Date();
+      const startOfMonth = new Date(competence.getFullYear(), competence.getMonth(), 1);
+      const endOfMonth = new Date(competence.getFullYear(), competence.getMonth() + 1, 0);
+
+      // 1️⃣ Buscar a conta com família e grupo (contas credit ativas)
       const account = await this.prisma.account.findUnique({
         where: { id: accountId },
         include: {
-          family: true,
-          group: true,
+          family: {
+            include: {
+              accounts: { where: { active: true, type: 'CREDITO' }, select: { id: true, name: true } }
+            }
+          },
+          group: {
+            include: {
+              accounts: { where: { active: true }, select: { id: true, name: true } }
+            }
+          },
         },
       });
 
       if (!account) return;
 
-      const competence = new Date();
-      const startOfMonth = new Date(competence.getFullYear(), competence.getMonth(), 1);
-
-      // Calcula o total acumulado no mês para esta conta
-      const monthTotal = await this.calculateMonthlyTotal(accountId, competence);
-
-      // Busca checkpoints ativos para esta conta/grupo/família
+      // 2️⃣ Buscar checkpoints vinculados (conta, grupo, família)
       const checkpoints = await this.prisma.balanceCheckpoint.findMany({
         where: {
           active: true,
           OR: [
             { accountId },
-            { groupId: account.groupId || undefined },
-            { familyId: account.familyId, type: 'family' },
-          ],
+            { groupId: account.groupId ?? undefined },
+            { familyId: account.familyId, type: 'family' }
+          ]
         },
       });
 
-      // Processa cada checkpoint
+      if (checkpoints.length === 0) return;
+
+      // 3️⃣ Buscar notificações já enviadas no mês
+      const existingNotifications = await this.prisma.checkpointNotification.findMany({
+        where: {
+          checkpointId: { in: checkpoints.map(c => c.id) },
+          competence: startOfMonth
+        },
+        select: { checkpointId: true }
+      });
+
+      const notifiedCheckpoints = new Set(existingNotifications.map(n => n.checkpointId));
+
+      // 4️⃣ Selecionar quais contas consultar (só crédito)
+      const accountIds = new Set<string>();
+      if (checkpoints.some(c => c.type === 'family') && account.family?.accounts && account.type === 'CREDITO') {
+        account.family.accounts.forEach(a => accountIds.add(a.id));
+      }
+      if (checkpoints.some(c => c.type === 'group') && account.group?.accounts) {
+        account.group.accounts.forEach(a => accountIds.add(a.id));
+      }
+      if (checkpoints.some(c => c.type === 'account') && account.type === 'CREDITO') {
+        accountIds.add(account.id);
+      }
+
+
+      if (accountIds.size === 0) return;
+
+      // 5️⃣ Buscar transações do período
+      const transactions = await this.prisma.transaction.findMany({
+        where: {
+          accountId: { in: [...accountIds] },
+          accountingPeriod: { gte: startOfMonth, lte: endOfMonth },
+        },
+        select: {
+          accountId: true,
+          amount: true,
+          payer: { select: { id: true, name: true } },
+          user: { select: { id: true, name: true } }
+        }
+      });
+
+      const accountTotals = this.calculateTotalsInMemory(transactions);
+      const payerTotals = this.calculatePayerTotalsInMemory(transactions);
+
+      // 6️⃣ Processar apenas checkpoints ainda não notificados
       for (const checkpoint of checkpoints) {
-        await this.processCheckpoint(checkpoint, monthTotal, startOfMonth, account);
+        if (!notifiedCheckpoints.has(checkpoint.id)) {
+          await this.processCheckpoint(checkpoint, accountTotals, payerTotals, competence, account);
+        }
       }
     } catch (error) {
       console.error('❌ Erro ao verificar checkpoints:', error);
-      // Não lança erro para não quebrar o fluxo principal
     }
   }
 
   /**
-   * Calcula o total gasto no mês (apenas gastos: crédito, débito, refeição)
+   * Calcula totais por conta processando em memória
    */
-  private async calculateMonthlyTotal(accountId: string, competence: Date): Promise<number> {
-    const startOfMonth = new Date(competence.getFullYear(), competence.getMonth(), 1);
-    const endOfMonth = new Date(competence.getFullYear(), competence.getMonth() + 1, 0);
+  private calculateTotalsInMemory(
+    transactions: Array<{ accountId: string; amount: any }>
+  ): Map<string, number> {
+    const totals = new Map<string, number>();
 
-    const result = await this.prisma.transaction.aggregate({
-      where: {
-        accountId,
-        accountingPeriod: {
-          gte: startOfMonth,
-          lte: endOfMonth,
-        },
-      },
-      _sum: { amount: true },
-    });
+    for (const transaction of transactions) {
+      const accountId = transaction.accountId;
+      const amount = Math.abs(Number(transaction.amount || 0));
+      const currentTotal = totals.get(accountId) || 0;
+      totals.set(accountId, currentTotal + amount);
+    }
 
-    return Math.abs(Number(result._sum.amount || 0));
+    return totals;
   }
 
   /**
-   * Calcula total para grupo
+   * Calcula totais por pagador processando em memória
    */
-  private async calculateGroupMonthlyTotal(groupId: string, competence: Date): Promise<number> {
-    const accounts = await this.prisma.account.findMany({
-      where: { groupId, active: true },
-      select: { id: true },
-    });
+  private calculatePayerTotalsInMemory(
+    transactions: Array<{
+      accountId: string;
+      amount: any;
+      payer?: { id: string; name: string } | null;
+      user?: { id: string; name: string } | null;
+    }>
+  ): Map<string, { name: string; total: number }> {
+    const totals = new Map<string, { name: string; total: number }>();
 
-    const totals = await Promise.all(
-      accounts.map(acc => this.calculateMonthlyTotal(acc.id, competence))
-    );
+    for (const transaction of transactions) {
+      // Prioriza payer, se não existir usa user
+      const payerInfo = transaction.payer || transaction.user;
 
-    return totals.reduce((sum, total) => sum + total, 0);
+      if (payerInfo) {
+        const amount = Math.abs(Number(transaction.amount || 0));
+        const current = totals.get(payerInfo.id) || { name: payerInfo.name, total: 0 };
+        totals.set(payerInfo.id, {
+          name: payerInfo.name,
+          total: current.total + amount
+        });
+      }
+    }
+
+    return totals;
   }
 
   /**
-   * Calcula total para família inteira
-   */
-  private async calculateFamilyMonthlyTotal(familyId: string, competence: Date): Promise<number> {
-    const accounts = await this.prisma.account.findMany({
-      where: { familyId, active: true },
-      select: { id: true },
-    });
-
-    const totals = await Promise.all(
-      accounts.map(acc => this.calculateMonthlyTotal(acc.id, competence))
-    );
-
-    return totals.reduce((sum, total) => sum + total, 0);
-  }
-
-  /**
-   * Processa um checkpoint individual
+   * Processa um checkpoint individual (sem queries adicionais)
    */
   private async processCheckpoint(
     checkpoint: any,
-    accountTotal: number,
+    accountTotals: Map<string, number>,
+    payerTotals: Map<string, { name: string; total: number }>,
     competence: Date,
     account: any
   ): Promise<void> {
-    // Verifica se já foi enviada notificação para este checkpoint neste mês
-    const existingNotification = await this.prisma.checkpointNotification.findUnique({
-      where: {
-        checkpointId_competence: {
-          checkpointId: checkpoint.id,
-          competence,
-        },
-      },
-    });
-
-    if (existingNotification) {
-      // Já enviou notificação para este checkpoint neste mês
-      return;
-    }
-
     // Calcula o total baseado no tipo de checkpoint
-    let currentTotal = accountTotal;
+    let currentTotal = 0;
     let targetName = account.name;
 
-    if (checkpoint.type === 'group' && checkpoint.groupId) {
-      currentTotal = await this.calculateGroupMonthlyTotal(checkpoint.groupId, competence);
-      const group = await this.prisma.group.findUnique({
-        where: { id: checkpoint.groupId },
-      });
-      targetName = group?.name || 'Grupo';
-    } else if (checkpoint.type === 'family') {
-      currentTotal = await this.calculateFamilyMonthlyTotal(checkpoint.familyId, competence);
+    if (checkpoint.type === 'account') {
+      currentTotal = accountTotals.get(checkpoint.accountId) || 0;
+      targetName = account.name;
+    } else if (checkpoint.type === 'group' && checkpoint.groupId && account.group) {
+      // Soma todos os totais das contas do grupo
+      for (const acc of account.group.accounts) {
+        currentTotal += accountTotals.get(acc.id) || 0;
+      }
+      targetName = account.group.name || 'Grupo';
+    } else if (checkpoint.type === 'family' && account.family) {
+      // Soma todos os totais das contas da família
+      for (const acc of account.family.accounts) {
+        currentTotal += accountTotals.get(acc.id) || 0;
+      }
       targetName = account.family.name;
     }
 
@@ -147,7 +186,14 @@ export class CheckpointService implements ICheckpointService {
 
     // Verifica se o checkpoint foi atingido
     if (currentTotal >= threshold) {
-      await this.sendWhatsAppMessage(checkpoint, currentTotal, competence, account, targetName);
+      await this.sendWhatsAppMessage(
+        checkpoint,
+        currentTotal,
+        competence,
+        account,
+        targetName,
+        checkpoint.type === 'family' ? payerTotals : null
+      );
     }
   }
 
@@ -159,42 +205,38 @@ export class CheckpointService implements ICheckpointService {
     currentTotal: number,
     competence: Date,
     account: any,
-    targetName: string
+    targetName: string,
+    payerTotals: Map<string, { name: string; total: number }> | null = null
   ): Promise<void> {
     let connection;
     let channel;
 
     try {
-      // Conecta ao RabbitMQ
       connection = await amqp.connect(this.config.url);
       channel = await connection.createChannel();
 
-      // Garante que a fila existe
       await channel.assertQueue(this.config.queue, { durable: true });
 
-      // Formata a competência
       const monthNames = [
         'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
         'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
       ];
       const competenceStr = `${monthNames[competence.getMonth()]}/${competence.getFullYear()}`;
 
-      // Monta mensagem formatada
       const messageText = this.buildWhatsAppMessage(
         checkpoint,
         currentTotal,
         competenceStr,
-        targetName
+        targetName,
+        payerTotals
       );
 
-      // Envia para a fila
       channel.sendToQueue(
         this.config.queue,
-        Buffer.from(JSON.stringify(messageText)),
+        Buffer.from(messageText),
         { persistent: true }
       );
 
-      // Registra notificação no banco (previne duplicatas)
       const messageId = `msg_${Date.now()}_${Math.random().toString(36)}`;
 
       await this.prisma.checkpointNotification.create({
@@ -235,7 +277,8 @@ export class CheckpointService implements ICheckpointService {
     checkpoint: any,
     currentTotal: number,
     competence: string,
-    targetName: string
+    targetName: string,
+    payerTotals: Map<string, { name: string; total: number }> | null = null
   ): string {
     const threshold = Number(checkpoint.threshold);
     const emoji = currentTotal >= threshold * 1.2 ? '🚨' : '⚠️';
@@ -249,7 +292,7 @@ export class CheckpointService implements ICheckpointService {
       targetText = `*Família:* ${targetName}`;
     }
 
-    return `${emoji} *Alerta de Gastos*
+    let message = `${emoji} *Alerta de Gastos*
 
 ${targetText}
 *Período:* ${competence}
@@ -258,5 +301,21 @@ ${targetText}
 *Total Gasto:* R$ ${currentTotal.toFixed(2)}
 
 Você atingiu o limite de gastos definido para este período!`;
+
+    // Adiciona demonstrativo por pagador apenas para checkpoints de família
+    if (checkpoint.type === 'family' && payerTotals && payerTotals.size > 0) {
+      message += '\n\n📊 *Demonstrativo por Pagador:*\n';
+
+      // Ordena os pagadores por valor (maior para menor)
+      const sortedPayers = Array.from(payerTotals.entries())
+        .sort((a, b) => b[1].total - a[1].total);
+
+      for (const [_, payerData] of sortedPayers) {
+        const percentage = (payerData.total / currentTotal) * 100;
+        message += `\n• ${payerData.name}: R$ ${payerData.total.toFixed(2)} (${percentage.toFixed(1)}%)`;
+      }
+    }
+
+    return message;
   }
 }

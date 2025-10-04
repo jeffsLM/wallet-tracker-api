@@ -9,13 +9,15 @@ export const ReportParamsByPeriodSchema = z.object({
   endDate: z.string().refine(
     (date) => !isNaN(Date.parse(date)),
     "Data deve estar no formato ISO valido"
-  )
+  ),
+  accountType: z.array(z.string()).optional(),
 });
 export const ReportParamsByCompetenceSchema = z.object({
   date: z.string().refine(
     (date) => !isNaN(Date.parse(date)),
     "Data deve estar no formato ISO valido"
   ),
+  accountType: z.array(z.string()).optional(),
 });
 
 export interface ExpensesOverview {

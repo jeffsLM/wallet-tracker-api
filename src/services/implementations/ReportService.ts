@@ -15,7 +15,7 @@ export class ReportService implements IReportService {
   ) { }
 
   async expensesOverview(params: ReportParamsByCompetenceDto): Promise<ExpensesOverview> {
-    const transactions = await this.transactionRepository.findByCompetence(new Date(params.date));
+    const transactions = await this.transactionRepository.findByCompetenceAndAccountType(new Date(params.date), params?.accountType);
 
     const totalExpenses = transactions.reduce((acc, curr) => acc + curr.amount.toNumber(), 0);
     const totalCredit = transactions.filter(t => t.account.type === 'CREDITO').reduce((acc, curr) => acc + curr.amount.toNumber(), 0);
@@ -59,7 +59,7 @@ export class ReportService implements IReportService {
   }
 
   async expansesOverviewByPayer(params: ReportParamsByCompetenceDto): Promise<ExpansesOverviewByPayer[]> {
-    const transactions = await this.transactionRepository.findByCompetence(new Date(params.date));
+    const transactions = await this.transactionRepository.findByCompetenceAndAccountType(new Date(params.date), params?.accountType);
     const expansesByPayer = transactions.reduce((acc, transaction) => {
       const payer = transaction.payer?.name ?? "Desconhecido";
       const amount = transaction.amount.toNumber();
