@@ -59,6 +59,8 @@ export class ReportService implements IReportService {
   }
 
   async expansesOverviewByPayer(params: ReportParamsByCompetenceDto): Promise<ExpansesOverviewByPayer[]> {
+
+    console.log(params);
     const transactions = await this.transactionRepository.findByCompetenceAndAccountType(new Date(params.date), params?.accountType);
     const expansesByPayer = transactions.reduce((acc, transaction) => {
       const payer = transaction.payer?.name ?? "Desconhecido";
@@ -80,9 +82,10 @@ export class ReportService implements IReportService {
 
 
   async expansesOverviewByPeriodAndPayer(params: ReportParamsByPeriodDto): Promise<any> {
-    const transactions = await this.transactionRepository.findByPeriod(
+    const transactions = await this.transactionRepository.findByPeriodAndAccountType(
       new Date(params.startDate),
-      new Date(params.endDate)
+      new Date(params.endDate),
+      params?.accountType
     );
 
     // 1. Lista de todos os pagadores distintos
@@ -127,9 +130,10 @@ export class ReportService implements IReportService {
   }
 
   async expansesOverviewByPeriod(params: ReportParamsByPeriodDto): Promise<any> {
-    const transactions = await this.transactionRepository.findByPeriod(
+    const transactions = await this.transactionRepository.findByPeriodAndAccountType(
       new Date(params.startDate),
-      new Date(params.endDate)
+      new Date(params.endDate),
+      params?.accountType
     );
 
     // 1. Gerar todos os meses do período

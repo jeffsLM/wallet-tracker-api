@@ -100,19 +100,28 @@ export class TransactionRepository implements ITransactionRepository {
       orderBy: { createAt: 'desc' }
     });
   }
-  async findByPeriod(dateStart: Date, dateEnd: Date): Promise<(Transaction & {
+  async findByPeriodAndAccountType(dateStart: Date, dateEnd: Date, accountType?: string[]): Promise<(Transaction & {
     account: Account;
     user: User | null;
     payer: Payer | null;
   })[]> {
     const start = dayjs(dateStart).toDate();
     const end = dayjs(dateEnd).toDate();
+    const hasAccountType = accountType && accountType.length > 0;
+
     return this.prisma.transaction.findMany({
       where: {
         accountingPeriod: {
           gt: start,
           lte: end,
         },
+        ...(hasAccountType && {
+          account: {
+            type: {
+              in: accountType
+            }
+          }
+        })
       },
       include: {
         account: true,

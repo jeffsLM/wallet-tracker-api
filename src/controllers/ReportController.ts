@@ -32,9 +32,10 @@ export class ReportController {
   async expensesOverview(req: Request<{}, {}, ReportParamsByCompetenceDto>, res: Response) {
     try {
       const date = req.body.date;
+      const accountType = req.body.accountType;
 
       const report = await this.reportService.expensesOverview({
-        date
+        date, accountType
       });
 
       res.status(200).json({
@@ -52,10 +53,14 @@ export class ReportController {
     try {
       const startDate = req.body.startDate;
       const endDate = req.body.endDate;
+      const accountType = req.body.accountType;
+
+      console.log({ startDate, endDate, accountType });
 
       const report = await this.reportService.expansesOverviewByPeriodAndPayer({
         startDate,
-        endDate
+        endDate,
+        accountType
       });
 
       res.status(200).json({
@@ -72,10 +77,12 @@ export class ReportController {
     try {
       const startDate = req.body.startDate;
       const endDate = req.body.endDate;
+      const accountType = req.body.accountType;
 
       const report = await this.reportService.expansesOverviewByPeriod({
         startDate,
-        endDate
+        endDate,
+        accountType
       });
 
       res.status(200).json({
