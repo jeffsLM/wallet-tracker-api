@@ -4,6 +4,10 @@ import { ITransactionRepository } from '../../repositories/interfaces/ITransacti
 import { ReportParamsByCompetenceDto, ExpensesOverview, OverflowToCredit, ExpansesOverviewByPayer, ReportParamsByPeriodDto } from '../../shared/dtos/report.dto';
 import { IGroupBalanceRepository } from '../../repositories/interfaces/IGroupBalanceRepository';
 import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
+
+dayjs.extend(isBetween);
+
 
 @injectable()
 export class ReportService implements IReportService {
@@ -33,21 +37,33 @@ export class ReportService implements IReportService {
   }
 
   async overflowToCredit(params: ReportParamsByCompetenceDto): Promise<OverflowToCredit> {
-    const groupBalances = await this.groupBalanceRepository.findByCompetence(new Date(params.date));
+    const startOfMonth = dayjs(params.date).startOf('month').toDate();
+    const endOfMonth = dayjs(params.date).endOf('month').toDate();
 
-    const allGroups = groupBalances.map((groupBalance) => {
-      const totalExpenses = groupBalance.group.accounts.reduce((acc, curr) => acc + curr.transactions.reduce((acc, curr) => acc + curr.amount.toNumber(), 0), 0);
+    const groupBalances = await this.groupBalanceRepository.findByCompetence(dayjs(params.date).toDate());
 
-      return {
-        name: groupBalance.group.name,
-        totalExpenses: totalExpenses,
-        totalIncome: groupBalance.amount.toNumber()
-      }
-    })
+    const allGroups = groupBalances
+      .map((groupBalance) => {
+        // Calcula total de despesas filtrando por competência
+        const totalExpenses = groupBalance.group.accounts.reduce((accountAcc, account) => {
+          const transactionsSum = account.transactions
+            .filter(t => dayjs(t.accountingPeriod).isBetween(startOfMonth, endOfMonth, null, '[)'))
+            .reduce((transAcc, transaction) =>
+              transAcc + transaction.amount.toNumber(), 0
+            );
+
+          return accountAcc + transactionsSum;
+        }, 0);
+
+        return {
+          name: groupBalance.group.name,
+          totalExpenses,
+          totalIncome: groupBalance.amount.toNumber()
+        };
+      });
 
     const allGroupsExpenses = allGroups.reduce((acc, curr) => acc + curr.totalExpenses, 0);
     const allGroupsIncome = allGroups.reduce((acc, curr) => acc + curr.totalIncome, 0);
-
     const amountRemaining = allGroupsExpenses - allGroupsIncome;
 
     return {
@@ -55,7 +71,7 @@ export class ReportService implements IReportService {
       allGroupsExpenses,
       allGroupsIncome,
       amountRemaining
-    }
+    };
   }
 
   async expansesOverviewByPayer(params: ReportParamsByCompetenceDto): Promise<ExpansesOverviewByPayer[]> {
