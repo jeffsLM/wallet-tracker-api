@@ -18,9 +18,9 @@ export class ReportService implements IReportService {
     const transactions = await this.transactionRepository.findByCompetenceAndAccountType(new Date(params.date), params?.accountType);
     const groupVoucher = await this.groupBalanceRepository.findByCompetence(new Date(params.date));
     const totalExpenses = transactions.reduce((acc, curr) => acc + curr.amount.toNumber(), 0);
-    const totalCredit = transactions.filter(t => t.account.type === 'CREDITO').reduce((acc, curr) => acc + curr.amount.toNumber(), 0);
+    const totalCredit = transactions.filter(t => t.account.type === 'CREDITO' && !t.account.groupId).reduce((acc, curr) => acc + curr.amount.toNumber(), 0);
     const totalVoucher = groupVoucher.reduce((acc, curr) => acc + curr.amount.toNumber(), 0);
-    const totalVoucherUsed = transactions.filter(t => t.account.type !== 'CREDITO').reduce((acc, curr) => acc + curr.amount.toNumber(), 0);
+    const totalVoucherUsed = transactions.filter(t => t.account.groupId).reduce((acc, curr) => acc + curr.amount.toNumber(), 0);
 
     return {
       totalExpenses,
