@@ -59,12 +59,38 @@ export class TransactionRepository implements ITransactionRepository {
     user: User | null;
     payer: Payer | null
   })[]> {
+    const openClosures = await this.prisma.monthlyClosure.findMany({
+      where: {
+        familyId: { in: familyIds },
+        status: 'open'
+      },
+      select: {
+        familyId: true,
+        competence: true
+      }
+    });
+
     return this.prisma.transaction.findMany({
-      where: { account: { familyId: { in: familyIds } } },
+      where: {
+        OR: openClosures.map(closure => {
+          const startOfMonth = dayjs(closure.competence).startOf('month').toDate();
+          const endOfMonth = dayjs(closure.competence).endOf('month').toDate();
+
+          return {
+            account: {
+              familyId: closure.familyId
+            },
+            accountingPeriod: {
+              gte: startOfMonth,
+              lte: endOfMonth
+            }
+          };
+        })
+      },
       include: {
         account: true,
         user: true,
-        payer: true
+        payer: true,
       },
       orderBy: { createAt: 'desc' }
     });

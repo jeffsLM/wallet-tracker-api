@@ -7,6 +7,7 @@ import { CreateAccountDto, UpdateAccountDto } from '../../shared/dtos/account.dt
 import { NotFoundError } from '../../shared/middlewares/error.middleware';
 import { ITransactionRepository } from '../../repositories/interfaces/ITransactionRepository';
 import { IGroupBalanceRepository } from '../../repositories/interfaces/IGroupBalanceRepository';
+import dayjs from 'dayjs';
 
 @injectable()
 export class AccountService implements IAccountService {
@@ -97,7 +98,7 @@ export class AccountService implements IAccountService {
       const groupTransaction = accountByTransaction.filter(t => t.account.groupId === account.groupId);
       const totalUsed = accountTransactions.reduce((total, transaction) => total + transaction.amount.toNumber(), 0);
       const totalUsedGroup = groupTransaction.reduce((total, transaction) => total + transaction.amount.toNumber(), 0);
-      const balance = balances?.find(b => b.groupId === account.groupId);
+      const balance = balances?.find(b => b.groupId === account.groupId && dayjs(b.competence).isSame(dayjs(), 'month'));
       const hastBalance = !!account.groupId
 
       return {

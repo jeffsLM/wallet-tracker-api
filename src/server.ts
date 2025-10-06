@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { app } from './app';
 import { prisma } from './shared/container';
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 async function startServer() {
   try {
