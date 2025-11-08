@@ -75,8 +75,6 @@ export class ReportService implements IReportService {
   }
 
   async expansesOverviewByPayer(params: ReportParamsByCompetenceDto): Promise<ExpansesOverviewByPayer[]> {
-
-    console.log(params);
     const transactions = await this.transactionRepository.findByCompetenceAndAccountType(new Date(params.date), params?.accountType);
     const expansesByPayer = transactions.reduce((acc, transaction) => {
       const payer = transaction.payer?.name ?? "Desconhecido";

@@ -55,8 +55,6 @@ export class ReportController {
       const endDate = req.body.endDate;
       const accountType = req.body.accountType;
 
-      console.log({ startDate, endDate, accountType });
-
       const report = await this.reportService.expansesOverviewByPeriodAndPayer({
         startDate,
         endDate,

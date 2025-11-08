@@ -61,8 +61,6 @@ export class CheckpointService implements ICheckpointService {
         select: { checkpointId: true }
       });
 
-      console.log({ existingNotifications });
-
       const notifiedCheckpoints = new Set(existingNotifications.map(n => n.checkpointId));
 
       // 4️⃣ Selecionar quais contas consultar (só crédito)
