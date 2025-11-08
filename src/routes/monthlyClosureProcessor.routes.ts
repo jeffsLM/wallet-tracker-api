@@ -2,8 +2,8 @@ import { Router } from 'express';
 import { MonthlyClosureProcessorController } from '../controllers/MonthlyClosureProcessorController';
 import { validateBody } from '../shared/middlewares/validation.middleware';
 import {
-  WhatsappPluginTransactionSchema,
-} from '../shared/dtos/transactionWhatsappPlugin.dto';
+  MonthlyClosureProcessorSchema,
+} from '../shared/dtos/monthlyClosureProcessorService.dto';
 import { container } from '../shared/container';
 
 const monthlyClosureProcessorRoutes = Router();
@@ -11,7 +11,7 @@ const monthlyClosureProcessorController = container.resolve(MonthlyClosureProces
 
 monthlyClosureProcessorRoutes.post(
   '/',
-  validateBody(WhatsappPluginTransactionSchema),
+  validateBody(MonthlyClosureProcessorSchema),
   (req, res, next) => monthlyClosureProcessorController.handle(req, res).catch(next)
 );
 

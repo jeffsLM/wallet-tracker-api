@@ -53,10 +53,15 @@ export class CheckpointService implements ICheckpointService {
       const existingNotifications = await this.prisma.checkpointNotification.findMany({
         where: {
           checkpointId: { in: checkpoints.map(c => c.id) },
-          competence: startOfMonth
+          competence: {
+            gte: startOfMonth,
+            lte: endOfMonth
+          }
         },
         select: { checkpointId: true }
       });
+
+      console.log({ existingNotifications });
 
       const notifiedCheckpoints = new Set(existingNotifications.map(n => n.checkpointId));
 
