@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/.prisma/legacy-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Family {
+  id                String              @id @default(uuid())
+  name              String
+  createAt          DateTime
+  users             User[]
+  accounts          Account[]
+  MonthlyClosure    MonthlyClosure[]
+  BalanceCheckpoint BalanceCheckpoint[]
+}
+
+model User {
+  id           String        @id @default(uuid())
+  family       Family        @relation(fields: [familyId], references: [id])
+  familyId     String
+  name         String
+  phone        String?
+  createAt     DateTime
+  transactions Transaction[]
+}
+
+model Group {
+  id       String         @id @default(uuid())
+  name     String
+  accounts Account[]
+  balances GroupBalance[]
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  BalanceCheckpoint BalanceCheckpoint[]
+}
+
+model Account {
+  id       String  @id @default(uuid())
+  family   Family  @relation(fields: [familyId], references: [id])
+  familyId String
+  group    Group?  @relation(fields: [groupId], references: [id])
+  groupId  String?
+
+  name        String
+  type        String // cartão, cc, poupança, digital
+  last4Digits String? // apenas para cartão
+  active      Boolean @default(true)
+
+  createAt DateTime
+  updateAt DateTime?
+
+  transactions      Transaction[]
+  BalanceCheckpoint BalanceCheckpoint[]
+}
+
+model GroupBalance {
+  id      String @id @default(uuid())
+  group   Group  @relation(fields: [groupId], references: [id])
+  groupId String
+
+  competence  DateTime
+  amount      Decimal
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payer {
+  id           String        @id @default(uuid())
+  name         String
+  default      Boolean       @default(false)
+  createAt     DateTime
+  transactions Transaction[]
+}
+
+model Transaction {
+  id               String   @id @default(uuid())
+  account          Account  @relation(fields: [accountId], references: [id])
+  accountId        String
+  payer            Payer?   @relation(fields: [payerId], references: [id])
+  payerId          String?
+  user             User?    @relation(fields: [userId], references: [id])
+  userId           String?
+  accountingPeriod DateTime
+  operationType    String
+  amount           Decimal
+  installment      Int?
+  finalInstallment Int?
+  ocr              String?
+  description      String?
+  status           String?
+  createAt         DateTime
+}
+
+model MonthlyClosure {
+  id String @id @default(uuid())
+
+  // Referência da família, pois o fechamento é por família
+  family   Family @relation(fields: [familyId], references: [id])
+  familyId String
+
+  // Competência: mês/ano que esse fechamento representa
+  competence DateTime
+
+  // Valores processados
+  totalIncome   Decimal? @default(0.0) // receitas do mês
+  totalExpenses Decimal? @default(0.0) // gastos do mês
+
+  status String @default("open") // open, closed, processing
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BalanceCheckpoint {
+  id String @id @default(uuid())
+
+  familyId String? // Agora opcional
+  family   Family? @relation(fields: [familyId], references: [id])
+
+  accountId String? // Opcional
+  account   Account? @relation(fields: [accountId], references: [id])
+
+  groupId String? // Opcional
+  group   Group?  @relation(fields: [groupId], references: [id])
+
+  threshold Decimal // Valor do checkpoint (ex: 2000, 3000, 4000)
+  type      String // "account", "group" ou "family"
+  active    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  notifications CheckpointNotification[]
+
+  @@index([familyId])
+  @@index([accountId])
+  @@index([groupId])
+}
+
+model CheckpointNotification {
+  id           String            @id @default(uuid())
+  checkpoint   BalanceCheckpoint @relation(fields: [checkpointId], references: [id])
+  checkpointId String
+
+  competence  DateTime // mês/ano (primeiro dia do mês)
+  sentAt      DateTime
+  totalAmount Decimal // total acumulado no momento do envio
+
+  messageId String? // ID da mensagem no RabbitMQ
+  status    String  @default("sent") // sent, failed
+
+  @@unique([checkpointId, competence]) // ⚠️ IMPORTANTE: Previne duplicatas
+  @@index([competence])
+  @@index([sentAt])
+}
