@@ -59,11 +59,12 @@ Observação: `@updatedAt` só é preenchido automaticamente em `update`; em `cr
 
 ## 4. Rollout
 
-1. Criar cluster/database no Atlas; definir `MONGO_DATABASE` no `.env` (placeholder: `mongodb+srv://<user>:<password>@<cluster>/<db>`).
-2. `yarn prisma:push` → cria coleções e índices.
-3. `yarn migrate:mongo` → copia os dados e confere contagens.
-4. Subir a aplicação apontando para `MONGO_DATABASE` e validar.
-5. Supabase permanece como backup até decisão de desligar; `DATABASE_URL` pode então ser removido.
+1. Parar a API e os consumidores de fila (QStash/WhatsApp) para congelar escritas no Supabase até o passo de troca.
+2. Criar cluster/database no Atlas; definir `MONGO_DATABASE` no `.env` (placeholder: `mongodb+srv://<user>:<password>@<cluster>/<db>`). A URL precisa incluir o nome do database e `MONGO_DATABASE` também deve ser configurada no ambiente de produção.
+3. `yarn prisma:push` → cria coleções e índices.
+4. `yarn migrate:mongo` → copia os dados e confere contagens.
+5. Subir a aplicação apontando para `MONGO_DATABASE` e validar.
+6. Supabase permanece como backup até decisão de desligar; `DATABASE_URL` pode então ser removido.
 
 ## 5. Verificação
 
@@ -76,3 +77,4 @@ Observação: `@updatedAt` só é preenchido automaticamente em `update`; em `cr
 - **Float vs Decimal:** valor armazenado deixa de ser decimal exato. Os cálculos atuais já são feitos em `number`, então o comportamento das somas não muda. Alternativa (centavos em `Int`) descartada por exigir mais mudanças.
 - **Unicidade de checkpoint:** o `@@unique` vira índice único no Mongo via `db push`; precisa rodar `prisma:push` **antes** do script.
 - **Sem transações de banco no fluxo atual** (`$transaction` não é usado), então não há dependência extra de sessão/replica set além da exigida pelo Prisma.
+- **Falha no meio da migração:** destino fica parcial; resetar com `npx prisma db push --force-reset` (apenas no banco Mongo novo) e rodar `prisma:push` + `migrate:mongo` de novo.

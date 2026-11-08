@@ -51,6 +51,16 @@ QSTASH_CURRENT_SIGNING_KEY=your_current_signing_key
 QSTASH_NEXT_SIGNING_KEY=your_next_signing_key
 ```
 
+## Migrating data from Supabase to MongoDB
+
+1. Stop the API and any queue consumers (QStash/WhatsApp ingestion) so nothing writes to Supabase during the migration. Keep them stopped until step 5.
+2. Set `MONGO_DATABASE` (the URL must include the database name, e.g. `mongodb+srv://<user>:<password>@<cluster>/<database>`) and keep `DATABASE_URL` pointing to Supabase.
+3. Run `yarn prisma:push` to create the collections and indexes.
+4. Run `yarn migrate:mongo` to copy all data and compare counts. It aborts if the target already has data.
+5. Set `MONGO_DATABASE` in the production environment, then deploy and restart the API and consumers.
+
+**If the migration fails midway:** the target database is left partially filled, and a rerun will abort. Reset it with `npx prisma db push --force-reset`. This destroys all data in the database referenced by `MONGO_DATABASE`, so double-check that it points to the new Atlas database and never to anything else. Then rerun `yarn prisma:push` and `yarn migrate:mongo`. Supabase is only read, never modified.
+
 ## Installation and Setup
 
 ```bash
@@ -58,7 +68,7 @@ QSTASH_NEXT_SIGNING_KEY=your_next_signing_key
 yarn install
 
 # Generate Prisma client
-yarn prisma:generate
+npx prisma generate
 
 # Push the Prisma schema to the database
 yarn prisma:push

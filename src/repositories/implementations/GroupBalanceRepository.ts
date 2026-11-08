@@ -130,7 +130,6 @@ export class GroupBalanceRepository implements IGroupBalanceRepository {
     return this.prisma.groupBalance.update({
       where: { id },
       data: {
-        groupId: id,
         amount: data.amount ?? account.amount,
         competence: data.competence ?? account.competence,
         updatedAt: new Date()
