@@ -17,7 +17,7 @@ export class TransactionRepository implements ITransactionRepository {
       data: {
         ...data,
         accountingPeriod: dayjs(data.accountingPeriod).subtract(3, 'hours').toDate(),
-        amount: new Prisma.Decimal(data.amount),
+        amount: data.amount,
         createAt: dayjs().subtract(3, 'hours').toDate()
       }
     });
@@ -240,7 +240,7 @@ export class TransactionRepository implements ITransactionRepository {
     }
 
     if (data.amount) {
-      updateData.amount = new Prisma.Decimal(data.amount);
+      updateData.amount = data.amount;
     }
 
     return this.prisma.transaction.update({

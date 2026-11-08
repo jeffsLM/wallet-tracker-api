@@ -29,22 +29,22 @@ export class MonthlyClosureProcessorService implements IMonthlyClosureProcessorS
     const transactions = await this.transactionRepository.findByCompetenceAndAccountType(monthlyClosure.competence);
     const groupBalances = await this.groupBalanceRepository.findByCompetence(monthlyClosure.competence);
 
-    const totalExpenses = transactions.reduce((acc, curr) => acc + curr.amount.toNumber(), 0);
-    const totalIncome = groupBalances.reduce((acc, curr) => acc + curr.amount.toNumber(), 0);
+    const totalExpenses = transactions.reduce((acc, curr) => acc + curr.amount, 0);
+    const totalIncome = groupBalances.reduce((acc, curr) => acc + curr.amount, 0);
 
     const groupBalancesUpdated = groupBalances.map((groupBalance) => {
       const accounts = groupBalance.group.accounts.map((account) => {
         return {
           id: account.id,
           name: account.name,
-          amount: account.transactions.reduce((acc, curr) => acc + curr.amount.toNumber(), 0)
+          amount: account.transactions.reduce((acc, curr) => acc + curr.amount, 0)
         }
       })
 
       return {
         id: groupBalance.groupId,
         name: groupBalance.group.name,
-        amountIncome: groupBalance.amount.toNumber(),
+        amountIncome: groupBalance.amount,
         amountExpenses: accounts.reduce((acc, curr) => acc + curr.amount, 0),
         accounts: accounts
       }

@@ -21,10 +21,10 @@ export class ReportService implements IReportService {
   async expensesOverview(params: ReportParamsByCompetenceDto): Promise<ExpensesOverview> {
     const transactions = await this.transactionRepository.findByCompetenceAndAccountType(new Date(params.date), params?.accountType);
     const groupVoucher = await this.groupBalanceRepository.findByCompetence(new Date(params.date));
-    const totalExpenses = transactions.reduce((acc, curr) => acc + curr.amount.toNumber(), 0);
-    const totalCredit = transactions.filter(t => t.account.type === 'CREDITO' && !t.account.groupId).reduce((acc, curr) => acc + curr.amount.toNumber(), 0);
-    const totalVoucher = groupVoucher.reduce((acc, curr) => acc + curr.amount.toNumber(), 0);
-    const totalVoucherUsed = transactions.filter(t => t.account.groupId).reduce((acc, curr) => acc + curr.amount.toNumber(), 0);
+    const totalExpenses = transactions.reduce((acc, curr) => acc + curr.amount, 0);
+    const totalCredit = transactions.filter(t => t.account.type === 'CREDITO' && !t.account.groupId).reduce((acc, curr) => acc + curr.amount, 0);
+    const totalVoucher = groupVoucher.reduce((acc, curr) => acc + curr.amount, 0);
+    const totalVoucherUsed = transactions.filter(t => t.account.groupId).reduce((acc, curr) => acc + curr.amount, 0);
 
     return {
       totalExpenses,
@@ -49,7 +49,7 @@ export class ReportService implements IReportService {
           const transactionsSum = account.transactions
             .filter(t => dayjs(t.accountingPeriod).isBetween(startOfMonth, endOfMonth, null, '[)'))
             .reduce((transAcc, transaction) =>
-              transAcc + transaction.amount.toNumber(), 0
+              transAcc + transaction.amount, 0
             );
 
           return accountAcc + transactionsSum;
@@ -58,7 +58,7 @@ export class ReportService implements IReportService {
         return {
           name: groupBalance.group.name,
           totalExpenses,
-          totalIncome: groupBalance.amount.toNumber()
+          totalIncome: groupBalance.amount
         };
       });
 
@@ -78,7 +78,7 @@ export class ReportService implements IReportService {
     const transactions = await this.transactionRepository.findByCompetenceAndAccountType(new Date(params.date), params?.accountType);
     const expansesByPayer = transactions.reduce((acc, transaction) => {
       const payer = transaction.payer?.name ?? "Desconhecido";
-      const amount = transaction.amount.toNumber();
+      const amount = transaction.amount;
 
       const existing = acc.find((item) => item.payer === payer);
 
@@ -124,7 +124,7 @@ export class ReportService implements IReportService {
         const month = dayjs(t.accountingPeriod).format("YYYY-MM");
         const payer = t.payer?.name ?? "Desconhecido";
         if (!acc[month]) acc[month] = {};
-        acc[month][payer] = (acc[month][payer] ?? 0) + t.amount.toNumber();
+        acc[month][payer] = (acc[month][payer] ?? 0) + t.amount;
         return acc;
       },
       {}
@@ -172,7 +172,7 @@ export class ReportService implements IReportService {
         };
       }
 
-      acc[monthKey].total += transaction.amount.toNumber();
+      acc[monthKey].total += transaction.amount;
 
 
       return acc;

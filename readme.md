@@ -12,7 +12,7 @@
 
 <div align="center">
 
-![Badge](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Badge](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
 ![Badge](https://img.shields.io/badge/Zod-3E67B1?style=for-the-badge&logo=zod&logoColor=white)
 ![Badge](https://img.shields.io/badge/QStash-FF6B6B?style=for-the-badge&logo=upstash&logoColor=white)
 
@@ -40,8 +40,11 @@ The Wallet Tracker API follows clean architecture principles with clear separati
 Configure your environment variables in the .env file:
 
 ```env
-# Database Configuration
-DATABASE_URL=postgresql://user:password@localhost:5432/database
+# Database Configuration (MongoDB Atlas)
+MONGO_DATABASE=mongodb+srv://<user>:<password>@<cluster>/<database>
+
+# Legacy Supabase/PostgreSQL (used only by `yarn migrate:mongo`)
+DATABASE_URL=postgresql://<user>:<password>@<host>:5432/<database>
 
 # QStash Configuration
 QSTASH_CURRENT_SIGNING_KEY=your_current_signing_key
@@ -57,8 +60,8 @@ yarn install
 # Generate Prisma client
 yarn prisma:generate
 
-# Run database migrations
-yarn prisma:migrate
+# Push the Prisma schema to the database
+yarn prisma:push
 
 # Start development server
 yarn dev

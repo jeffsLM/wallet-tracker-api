@@ -3,12 +3,12 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "mongodb"
+  url      = env("MONGO_DATABASE")
 }
 
 model Family {
-  id                String              @id @default(uuid())
+  id                String              @id @default(uuid()) @map("_id")
   name              String
   createAt          DateTime
   users             User[]
@@ -18,7 +18,7 @@ model Family {
 }
 
 model User {
-  id           String        @id @default(uuid())
+  id           String        @id @default(uuid()) @map("_id")
   family       Family        @relation(fields: [familyId], references: [id])
   familyId     String
   name         String
@@ -28,7 +28,7 @@ model User {
 }
 
 model Group {
-  id       String         @id @default(uuid())
+  id       String         @id @default(uuid()) @map("_id")
   name     String
   accounts Account[]
   balances GroupBalance[]
@@ -39,7 +39,7 @@ model Group {
 }
 
 model Account {
-  id       String  @id @default(uuid())
+  id       String  @id @default(uuid()) @map("_id")
   family   Family  @relation(fields: [familyId], references: [id])
   familyId String
   group    Group?  @relation(fields: [groupId], references: [id])
@@ -58,12 +58,12 @@ model Account {
 }
 
 model GroupBalance {
-  id      String @id @default(uuid())
+  id      String @id @default(uuid()) @map("_id")
   group   Group  @relation(fields: [groupId], references: [id])
   groupId String
 
   competence  DateTime
-  amount      Decimal
+  amount      Float
   description String?
 
   createdAt DateTime @default(now())
@@ -71,7 +71,7 @@ model GroupBalance {
 }
 
 model Payer {
-  id           String        @id @default(uuid())
+  id           String        @id @default(uuid()) @map("_id")
   name         String
   default      Boolean       @default(false)
   createAt     DateTime
@@ -79,7 +79,7 @@ model Payer {
 }
 
 model Transaction {
-  id               String   @id @default(uuid())
+  id               String   @id @default(uuid()) @map("_id")
   account          Account  @relation(fields: [accountId], references: [id])
   accountId        String
   payer            Payer?   @relation(fields: [payerId], references: [id])
@@ -88,7 +88,7 @@ model Transaction {
   userId           String?
   accountingPeriod DateTime
   operationType    String
-  amount           Decimal
+  amount           Float
   installment      Int?
   finalInstallment Int?
   ocr              String?
@@ -98,7 +98,7 @@ model Transaction {
 }
 
 model MonthlyClosure {
-  id String @id @default(uuid())
+  id String @id @default(uuid()) @map("_id")
 
   // Referência da família, pois o fechamento é por família
   family   Family @relation(fields: [familyId], references: [id])
@@ -108,8 +108,8 @@ model MonthlyClosure {
   competence DateTime
 
   // Valores processados
-  totalIncome   Decimal? @default(0.0) // receitas do mês
-  totalExpenses Decimal? @default(0.0) // gastos do mês
+  totalIncome   Float? @default(0.0) // receitas do mês
+  totalExpenses Float? @default(0.0) // gastos do mês
 
   status String @default("open") // open, closed, processing
 
@@ -118,7 +118,7 @@ model MonthlyClosure {
 }
 
 model BalanceCheckpoint {
-  id String @id @default(uuid())
+  id String @id @default(uuid()) @map("_id")
 
   familyId String? // Agora opcional
   family   Family? @relation(fields: [familyId], references: [id])
@@ -129,7 +129,7 @@ model BalanceCheckpoint {
   groupId String? // Opcional
   group   Group?  @relation(fields: [groupId], references: [id])
 
-  threshold Decimal // Valor do checkpoint (ex: 2000, 3000, 4000)
+  threshold Float // Valor do checkpoint (ex: 2000, 3000, 4000)
   type      String // "account", "group" ou "family"
   active    Boolean @default(true)
 
@@ -144,13 +144,13 @@ model BalanceCheckpoint {
 }
 
 model CheckpointNotification {
-  id           String            @id @default(uuid())
+  id           String            @id @default(uuid()) @map("_id")
   checkpoint   BalanceCheckpoint @relation(fields: [checkpointId], references: [id])
   checkpointId String
 
   competence  DateTime // mês/ano (primeiro dia do mês)
   sentAt      DateTime
-  totalAmount Decimal // total acumulado no momento do envio
+  totalAmount Float // total acumulado no momento do envio
 
   messageId String? // ID da mensagem no RabbitMQ
   status    String  @default("sent") // sent, failed

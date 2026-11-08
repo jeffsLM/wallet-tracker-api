@@ -68,14 +68,14 @@ export class AccountService implements IAccountService {
     const updatedAccounts = accounts.map((account) => {
       const accountTransactions = accountByTransaction.filter(t => t.accountId === account.id);
       const groupTransaction = accountByTransaction.filter(t => t.account.groupId === account.groupId);
-      const totalUsed = accountTransactions.reduce((total, transaction) => total + transaction.amount.toNumber(), 0);
-      const totalUsedGroup = groupTransaction.reduce((total, transaction) => total + transaction.amount.toNumber(), 0);
+      const totalUsed = accountTransactions.reduce((total, transaction) => total + transaction.amount, 0);
+      const totalUsedGroup = groupTransaction.reduce((total, transaction) => total + transaction.amount, 0);
       const balance = balances?.find(b => b.groupId === account.groupId);
       const hastBalance = !!account.groupId
 
       return {
         ...account,
-        balance: balance?.amount.toNumber() || 0,
+        balance: balance?.amount || 0,
         hasBalance: !!balance,
         totalUsed,
         totalUsedGroup: hastBalance ? totalUsedGroup : 0,
@@ -96,14 +96,14 @@ export class AccountService implements IAccountService {
     const updatedAccounts = accounts.map((account) => {
       const accountTransactions = accountByTransaction.filter(t => t.accountId === account.id);
       const groupTransaction = accountByTransaction.filter(t => t.account.groupId === account.groupId);
-      const totalUsed = accountTransactions.reduce((total, transaction) => total + transaction.amount.toNumber(), 0);
-      const totalUsedGroup = groupTransaction.reduce((total, transaction) => total + transaction.amount.toNumber(), 0);
+      const totalUsed = accountTransactions.reduce((total, transaction) => total + transaction.amount, 0);
+      const totalUsedGroup = groupTransaction.reduce((total, transaction) => total + transaction.amount, 0);
       const balance = balances?.find(b => b.groupId === account.groupId && dayjs(b.competence).isSame(dayjs(), 'month'));
       const hastBalance = !!account.groupId
 
       return {
         ...account,
-        balance: balance?.amount.toNumber() || 0,
+        balance: balance?.amount || 0,
         hasBalance: !!balance,
         totalUsed,
         totalUsedGroup: hastBalance ? totalUsedGroup : 0,
