@@ -9,6 +9,7 @@
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio",
     "prisma:legacy:generate": "prisma generate --schema prisma/legacy/schema.prisma",
+    "migrate:mongo": "tsx --env-file=.env scripts/migrate-postgres-to-mongo.ts",
     "postinstall": "prisma generate && prisma generate --schema prisma/legacy/schema.prisma"
   },
   "dependencies": {
